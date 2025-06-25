@@ -1,0 +1,20 @@
+import 'package:flutter/material.dart';
+
+class AppInfo {
+  final String packageName;
+  final String appName;
+
+  AppInfo({required this.packageName, required this.appName});
+}
+
+class CustomButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onPressed;
+
+  const CustomButton({required this.label, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(onPressed: onPressed, child: Text(label));
+  }
+}
