@@ -52,6 +52,17 @@ class LockScreenActivity : AppCompatActivity() {
                 .setNegativeButtonText("Cancel")
                 .build())
         }
+
+        val lockType = prefs.getString("lock_type", "pin")
+        if (lockType == "pattern") {
+            val forward = Intent(this, PatternLockActivity::class.java).apply {
+                putExtra(EXTRA_PACKAGE, intent.getStringExtra(EXTRA_PACKAGE))
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            }
+            startActivity(forward)
+            finish()
+            return
+        }
     }
 
     private fun sendUnlockedBroadcast() {

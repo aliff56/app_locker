@@ -9,6 +9,8 @@ class SecureStorage {
   final _storage = const FlutterSecureStorage();
   static const _pinKey = 'app_lock_pin';
   static const _isSetupKey = 'is_setup_complete';
+  static const _patternKey = 'app_lock_pattern';
+  static const _lockTypeKey = 'lock_type';
 
   Future<void> savePin(String pin) async {
     await _storage.write(key: _pinKey, value: pin);
@@ -47,5 +49,24 @@ class SecureStorage {
 
   Future<void> clearAll() async {
     await _storage.deleteAll();
+  }
+
+  Future<void> savePattern(String pattern) async {
+    await _storage.write(key: _patternKey, value: pattern);
+    await NativeBridge.updatePattern(pattern);
+  }
+
+  Future<String?> getPattern() async {
+    return await _storage.read(key: _patternKey);
+  }
+
+  Future<void> saveLockType(String type) async {
+    await _storage.write(key: _lockTypeKey, value: type);
+    await NativeBridge.updateLockType(type);
+  }
+
+  Future<String> getLockType() async {
+    final v = await _storage.read(key: _lockTypeKey);
+    return v ?? 'pin';
   }
 }

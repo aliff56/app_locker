@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:gravity="center"
     android:padding="24dp"
-    android:background="#CC000000">
+    android:background="#FF000000">
 
     <EditText
         android:id="@+id/pinEdit"
@@ -16,7 +16,7 @@
         android:maxLength="6"
         android:textColor="#FFFFFF"
         android:textColorHint="#80FFFFFF"
-        android:background="@android:color/transparent"
+        android:background="@drawable/pin_edit_background"
         android:textSize="24sp" />
 
     <Button

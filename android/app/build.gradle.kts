@@ -50,4 +50,6 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.biometric:biometric:1.1.0")
+    implementation("io.github.itsxtt:pattern-lock:0.2.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 }

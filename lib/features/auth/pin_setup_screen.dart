@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'pin_screen.dart';
+import 'pattern_setup_screen.dart';
+import '../../core/secure_storage.dart';
 
 class PinSetupScreen extends StatelessWidget {
   final VoidCallback onSetupComplete;
@@ -27,7 +29,22 @@ class PinSetupScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               Expanded(
-                child: PinScreen(isSetup: true, onSuccess: onSetupComplete),
+                child: FutureBuilder<String>(
+                  future: SecureStorage().getLockType(),
+                  builder: (context, snapshot) {
+                    final type = snapshot.data ?? 'pin';
+                    if (type == 'pattern') {
+                      return PatternSetupScreen(
+                        onSetupComplete: onSetupComplete,
+                      );
+                    } else {
+                      return PinScreen(
+                        isSetup: true,
+                        onSuccess: onSetupComplete,
+                      );
+                    }
+                  },
+                ),
               ),
             ],
           ),
