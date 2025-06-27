@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/secure_storage.dart';
+import '../../widgets/numeric_keypad.dart';
+import '../../theme.dart';
 
 class PinScreen extends StatefulWidget {
   final VoidCallback onSuccess;
@@ -18,30 +20,28 @@ class PinScreen extends StatefulWidget {
 }
 
 class _PinScreenState extends State<PinScreen> {
-  final TextEditingController _pinController = TextEditingController();
+  String _pin = '';
   String _confirmPin = '';
   String _errorText = '';
   bool _isConfirming = false;
 
   @override
   void dispose() {
-    _pinController.dispose();
     super.dispose();
   }
 
-  Future<void> _validatePin() async {
+  Future<void> _handleComplete() async {
     if (widget.isSetup) {
       if (!_isConfirming) {
-        _confirmPin = _pinController.text;
+        _confirmPin = _pin;
         setState(() {
           _isConfirming = true;
-          _errorText = '';
-          _pinController.clear();
+          _pin = '';
         });
         return;
       }
 
-      if (_pinController.text == _confirmPin) {
+      if (_pin == _confirmPin) {
         await SecureStorage().savePin(_confirmPin);
         await SecureStorage().setSetupComplete(true);
         widget.onSuccess();
@@ -50,74 +50,80 @@ class _PinScreenState extends State<PinScreen> {
         setState(() {
           _errorText = error;
           _isConfirming = false;
-          _pinController.clear();
+          _pin = '';
         });
         widget.onError?.call(error);
       }
     } else {
       final storedPin = await SecureStorage().getPin();
-      if (storedPin == _pinController.text) {
+      if (storedPin == _pin) {
         widget.onSuccess();
       } else {
         final error = 'Incorrect PIN';
         setState(() {
           _errorText = error;
-          _pinController.clear();
+          _pin = '';
         });
         widget.onError?.call(error);
       }
     }
   }
 
+  void _onDigit(int n) {
+    if (_pin.length >= 4) return;
+    setState(() => _pin += n.toString());
+    if (_pin.length == 4) _handleComplete();
+  }
+
+  void _onBack() {
+    if (_pin.isEmpty) return;
+    setState(() => _pin = _pin.substring(0, _pin.length - 1));
+  }
+
+  Widget _buildDots() {
+    List<Widget> dots = List.generate(4, (i) {
+      bool filled = i < _pin.length;
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        width: 16,
+        height: 16,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: filled ? kPrimaryColor : kPrimaryColor.withOpacity(.2),
+        ),
+      );
+    });
+    return Row(mainAxisAlignment: MainAxisAlignment.center, children: dots);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Center(
-        child: Container(
-          margin: const EdgeInsets.all(32),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                widget.isSetup
-                    ? _isConfirming
-                          ? 'Confirm PIN'
-                          : 'Set PIN'
-                    : 'Enter PIN',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 24),
+            Text(
+              widget.isSetup
+                  ? _isConfirming
+                        ? 'Confirm your PIN'
+                        : 'Set your 4-digit PIN'
+                  : 'Enter PIN',
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 32),
+            _buildDots(),
+            if (_errorText.isNotEmpty) ...[
               const SizedBox(height: 16),
-              TextField(
-                controller: _pinController,
-                keyboardType: TextInputType.number,
-                maxLength: 4,
-                obscureText: true,
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  errorText: _errorText.isNotEmpty ? _errorText : null,
-                ),
-                onSubmitted: (_) => _validatePin(),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _validatePin,
-                child: Text(
-                  widget.isSetup
-                      ? _isConfirming
-                            ? 'Confirm'
-                            : 'Next'
-                      : 'Unlock',
-                ),
-              ),
+              Text(_errorText, style: const TextStyle(color: Colors.red)),
             ],
-          ),
+            const Spacer(),
+            NumericKeypad(onDigit: _onDigit, onBack: _onBack),
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );

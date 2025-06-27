@@ -8,20 +8,33 @@ import 'features/locklist/locked_apps_screen.dart';
 import 'features/permissions/permissions_setup_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'native_bridge.dart';
+import 'theme.dart';
+import 'features/onboarding/splash_screen.dart';
+
+final themeModeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const AppLockerApp());
+  runApp(
+    ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeModeNotifier,
+      builder: (context, mode, _) =>
+          AppLockerApp(themeMode: mode ?? ThemeMode.light),
+    ),
+  );
 }
 
 class AppLockerApp extends StatelessWidget {
-  const AppLockerApp({Key? key}) : super(key: key);
+  final ThemeMode themeMode;
+  const AppLockerApp({Key? key, required this.themeMode}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'App Locker',
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+      theme: appTheme(),
+      darkTheme: appDarkTheme(),
+      themeMode: themeMode,
       home: const AppLockerHome(),
     );
   }
@@ -41,6 +54,7 @@ class _AppLockerHomeState extends State<AppLockerHome>
   bool _isLoading = true;
   bool _hasPermissions = false;
   bool _isSetupComplete = false;
+  bool _showSplash = true;
 
   int _navIndex = 0;
   late final List<Widget> _pages;
@@ -50,9 +64,11 @@ class _AppLockerHomeState extends State<AppLockerHome>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // Initialize page list after first frame to ensure BuildContext is ready if needed
     _pages = const [LockedAppsScreen(), SettingsScreen()];
     _initialize();
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() => _showSplash = false);
+    });
   }
 
   @override
@@ -106,8 +122,8 @@ class _AppLockerHomeState extends State<AppLockerHome>
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_isLoading || _showSplash) {
+      return const SplashScreen();
     }
 
     if (!_hasPermissions) {

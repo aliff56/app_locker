@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../core/permissions_manager.dart';
+import '../../theme.dart';
 import 'package:permission_handler/permission_handler.dart'
     show openAppSettings;
+import 'package:flutter/services.dart';
 
 class PermissionsSetupScreen extends StatefulWidget {
   const PermissionsSetupScreen({Key? key, required this.onAllGranted})
@@ -51,16 +53,31 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
     _refreshStatuses();
   }
 
-  Widget _buildRow(String label, bool granted, VoidCallback onPressed) {
-    return ListTile(
-      leading: Icon(
-        granted ? Icons.check_circle : Icons.cancel,
-        color: granted ? Colors.green : Colors.red,
+  Widget _buildCard(
+    String title,
+    IconData icon,
+    bool granted,
+    VoidCallback onGrant,
+  ) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(kRadius),
       ),
-      title: Text(label),
-      trailing: granted
-          ? const SizedBox.shrink()
-          : ElevatedButton(onPressed: onPressed, child: const Text('Grant')),
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(icon, color: granted ? Colors.green : kPrimaryColor),
+            const SizedBox(width: 16),
+            Expanded(child: Text(title, style: const TextStyle(fontSize: 16))),
+            if (!granted)
+              ElevatedButton(onPressed: onGrant, child: const Text('Grant')),
+            if (granted) const Icon(Icons.check_circle, color: Colors.green),
+          ],
+        ),
+      ),
     );
   }
 
@@ -78,17 +95,24 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
               style: TextStyle(fontSize: 16),
             ),
           ),
-          _buildRow(
-            'Display over other apps',
+          _buildCard(
+            'Usage Access',
+            Icons.visibility,
+            _usageGranted,
+            _requestUsage,
+          ),
+          _buildCard(
+            'Overlay Permission',
+            Icons.layers,
             _overlayGranted,
             _requestOverlay,
           ),
-          _buildRow(
-            'Notifications',
+          _buildCard(
+            'Notification Access',
+            Icons.notifications,
             _notificationGranted,
             _requestNotification,
           ),
-          _buildRow('Usage access', _usageGranted, _requestUsage),
           const Spacer(),
           Padding(
             padding: const EdgeInsets.all(16.0),

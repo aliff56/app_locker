@@ -31,6 +31,9 @@ class ForegroundLockService : Service() {
             }
         }
     }
+    private val lastLockTime: MutableMap<String, Long> = mutableMapOf()
+    private val lockCooldownMs = 2000L // 2 seconds
+    private var lastForegroundApp: String? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -73,17 +76,38 @@ class ForegroundLockService : Service() {
         if (appList.isNullOrEmpty()) return
         val currentApp = appList.maxByOrNull { it.lastTimeUsed }?.packageName ?: return
 
+        val launcherPkgs = getLauncherPackages()
+        val now = System.currentTimeMillis()
+
+        // Only show lock screen if foreground app is locked and not launcher/home
+        if (!lockedApps.contains(currentApp) || launcherPkgs.contains(currentApp)) {
+            unlockedPackage = null
+            lastForegroundApp = currentApp
+            return
+        }
+
+        // Only trigger lock if user is ENTERING the locked app (i.e., previous app was different)
+        if (lastForegroundApp == currentApp) {
+            // Still in the same app, do nothing
+            return
+        }
+
+        // Debounce: don't relaunch lock screen for same app within cooldown
+        if (lastLockTime.containsKey(currentApp) && now - lastLockTime[currentApp]!! < lockCooldownMs) {
+            lastForegroundApp = currentApp
+            return
+        }
+
         if (currentApp == unlockedPackage) {
-            // User already authenticated for this session
+            lastForegroundApp = currentApp
             return
         } else {
-            // User has switched apps — reset session
             unlockedPackage = null
         }
 
-        if (lockedApps.contains(currentApp)) {
-            launchLockScreen(currentApp)
-        }
+        lastLockTime[currentApp] = now
+        lastForegroundApp = currentApp
+        launchLockScreen(currentApp)
     }
 
     private fun launchLockScreen(pkg: String) {
@@ -114,6 +138,14 @@ class ForegroundLockService : Service() {
             .build()
 
         startForeground(1, notification)
+    }
+
+    private fun getLauncherPackages(): Set<String> {
+        val intent = Intent(Intent.ACTION_MAIN, null)
+        intent.addCategory(Intent.CATEGORY_HOME)
+        val pm = packageManager
+        val resolveInfos = pm.queryIntentActivities(intent, 0)
+        return resolveInfos.map { it.activityInfo.packageName }.toSet()
     }
 
     companion object {
