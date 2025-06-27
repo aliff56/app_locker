@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../../core/secure_storage.dart';
-import '../../core/foreground_service.dart';
+import '../../native_bridge.dart';
 
 class LockedAppsManager {
   static final LockedAppsManager _instance = LockedAppsManager._internal();
@@ -10,7 +10,6 @@ class LockedAppsManager {
 
   static const _lockedAppsKey = 'locked_apps_list';
   final _secureStorage = SecureStorage();
-  final _foregroundService = ForegroundService();
 
   Future<List<String>> getLockedApps() async {
     debugPrint('🚀 [AppLocker] --- LockedAppsManager:getLockedApps ---');
@@ -34,8 +33,8 @@ class LockedAppsManager {
     debugPrint('🚀 [AppLocker] --- LockedAppsManager:_updateAndNotify ---');
     debugPrint('   [AppLocker] Updating storage with: $apps');
     await _secureStorage.write(_lockedAppsKey, jsonEncode(apps));
-    debugPrint('   [AppLocker] Notifying foreground service.');
-    await _foregroundService.updateLockedApps(apps);
+    debugPrint('   [AppLocker] Notifying native.');
+    await NativeBridge.updateLockedApps(apps);
     debugPrint('   [AppLocker] --- LockedAppsManager:_updateAndNotify END ---');
   }
 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="#CC000000">
+
+    <EditText
+        android:id="@+id/pinEdit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="PIN"
+        android:inputType="numberPassword"
+        android:maxLength="6"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#80FFFFFF"
+        android:background="@android:color/transparent"
+        android:textSize="24sp" />
+
+    <Button
+        android:id="@+id/unlockBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Unlock"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout> 

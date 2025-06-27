@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../native_bridge.dart';
 
 class SecureStorage {
   static final SecureStorage _instance = SecureStorage._internal();
@@ -11,6 +12,7 @@ class SecureStorage {
 
   Future<void> savePin(String pin) async {
     await _storage.write(key: _pinKey, value: pin);
+    await NativeBridge.updatePin(pin);
   }
 
   Future<String?> getPin() async {

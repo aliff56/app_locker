@@ -40,11 +40,30 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Native foreground locker service -->
         <service
-            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:name="com.example.app_locker.ForegroundLockService"
             android:exported="false"
             android:foregroundServiceType="dataSync"
             android:stopWithTask="false" />
+
+        <!-- Receiver to auto-start service on boot -->
+        <receiver
+            android:name="com.example.app_locker.BootCompletedReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Lock screen activity shown on top of locked apps -->
+        <activity
+            android:name="com.example.app_locker.LockScreenActivity"
+            android:theme="@style/Theme.AppLocker.LockScreen"
+            android:exported="false"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
     </application>
     <queries>
         <intent>

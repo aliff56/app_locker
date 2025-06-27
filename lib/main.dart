@@ -1,13 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-import 'app_locker.dart';
 import 'core/permissions_manager.dart';
 import 'core/secure_storage.dart';
 import 'features/auth/pin_setup_screen.dart';
 import 'features/locklist/locked_apps_screen.dart';
-import 'features/overlay/overlay_manager.dart';
-import 'features/permissions/permission_denied_screen.dart';
+import 'features/permissions/permissions_setup_screen.dart';
+import 'features/settings/settings_screen.dart';
+import 'native_bridge.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,46 +36,29 @@ class AppLockerHome extends StatefulWidget {
 
 class _AppLockerHomeState extends State<AppLockerHome>
     with WidgetsBindingObserver {
-  static StreamSubscription<dynamic>? _foregroundTaskSubscription;
-
   final _permissionsManager = PermissionsManager();
   final _secureStorage = SecureStorage();
-  final _appLocker = AppLocker();
   bool _isLoading = true;
   bool _hasPermissions = false;
   bool _isSetupComplete = false;
 
+  int _navIndex = 0;
+  late final List<Widget> _pages;
+
   @override
   void initState() {
     super.initState();
-    _initForegroundTask();
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final overlayState = Overlay.of(context);
-      if (overlayState != null) {
-        OverlayManager().init(overlayState);
-      }
-    });
+
+    // Initialize page list after first frame to ensure BuildContext is ready if needed
+    _pages = const [LockedAppsScreen(), SettingsScreen()];
     _initialize();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _appLocker.stop();
     super.dispose();
-  }
-
-  void _initForegroundTask() {
-    if (_foregroundTaskSubscription == null) {
-      _foregroundTaskSubscription = FlutterForegroundTask.receivePort?.listen((
-        message,
-      ) {
-        if (message is String) {
-          OverlayManager().handleNotificationMessage(message);
-        }
-      });
-    }
   }
 
   @override
@@ -87,7 +70,6 @@ class _AppLockerHomeState extends State<AppLockerHome>
 
   Future<void> _initialize() async {
     setState(() => _isLoading = true);
-    await _requestPermissions();
     await _checkPermissions();
     if (_hasPermissions) {
       await _checkSetup();
@@ -100,9 +82,7 @@ class _AppLockerHomeState extends State<AppLockerHome>
     if (hasPermissions == _hasPermissions) return;
     setState(() => _hasPermissions = hasPermissions);
     if (hasPermissions) {
-      await _appLocker.initialize();
-    } else {
-      await _appLocker.stop();
+      await _checkSetup();
     }
   }
 
@@ -111,9 +91,17 @@ class _AppLockerHomeState extends State<AppLockerHome>
     setState(() => _isSetupComplete = isSetupComplete);
   }
 
-  Future<void> _requestPermissions() async {
-    await PermissionsManager.requestOverlayPermission();
-    await _permissionsManager.requestRequiredPermissions();
+  Future<void> _refreshNativeLockedList() async {
+    final json = await _secureStorage.read('locked_apps_list');
+    List<String> list = [];
+    if (json != null) {
+      try {
+        list = List<String>.from(jsonDecode(json));
+      } catch (_) {
+        list = [];
+      }
+    }
+    await NativeBridge.updateLockedApps(list);
   }
 
   @override
@@ -123,11 +111,13 @@ class _AppLockerHomeState extends State<AppLockerHome>
     }
 
     if (!_hasPermissions) {
-      return PermissionDeniedScreen(
-        onRetry: () async {
-          setState(() => _isLoading = true);
-          await _requestPermissions();
-          setState(() => _isLoading = false);
+      return PermissionsSetupScreen(
+        onAllGranted: () async {
+          await _checkPermissions();
+          if (_hasPermissions) {
+            await _checkSetup();
+            setState(() {});
+          }
         },
       );
     }
@@ -136,13 +126,27 @@ class _AppLockerHomeState extends State<AppLockerHome>
       return PinSetupScreen(
         onSetupComplete: () async {
           await _checkSetup();
+          await _refreshNativeLockedList();
           if (_isSetupComplete) {
-            await _appLocker.startMonitoring();
+            await _refreshNativeLockedList();
           }
         },
       );
     }
 
-    return WithForegroundTask(child: LockedAppsScreen());
+    return Scaffold(
+      body: _pages[_navIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _navIndex,
+        onTap: (i) => setState(() => _navIndex = i),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.lock), label: 'Locked Apps'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
+        ],
+      ),
+    );
   }
 }
