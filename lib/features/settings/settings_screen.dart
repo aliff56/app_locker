@@ -73,6 +73,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
             elevation: 4,
+            // ignore: deprecated_member_use
             shadowColor: Colors.black.withOpacity(0.08),
           ),
           onPressed: () {

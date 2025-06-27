@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../core/permissions_manager.dart';
 import '../../theme.dart';
-import 'package:permission_handler/permission_handler.dart'
-    show openAppSettings;
-import 'package:flutter/services.dart';
 
 class PermissionsSetupScreen extends StatefulWidget {
   const PermissionsSetupScreen({Key? key, required this.onAllGranted})

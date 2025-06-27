@@ -32,6 +32,7 @@ ThemeData appTheme() {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(kRadius),
       ),
+      // ignore: deprecated_member_use
       shadowColor: Colors.black.withOpacity(0.05),
     ),
   );

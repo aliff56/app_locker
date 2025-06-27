@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import java.util.*
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import android.app.usage.UsageEvents
 
 class ForegroundLockService : Service() {
 
@@ -68,43 +69,61 @@ class ForegroundLockService : Service() {
         }, 0, checkIntervalMs)
     }
 
+    private fun getForegroundAppPackage(usm: UsageStatsManager): String? {
+        val endTime = System.currentTimeMillis()
+        val beginTime = endTime - 2000 // look at last 2 seconds of events
+        val usageEvents = usm.queryEvents(beginTime, endTime)
+        val event = UsageEvents.Event()
+        var recentPkg: String? = null
+        var recentTimestamp = 0L
+        while (usageEvents.hasNextEvent()) {
+            usageEvents.getNextEvent(event)
+            if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND && event.timeStamp > recentTimestamp) {
+                recentTimestamp = event.timeStamp
+                recentPkg = event.packageName
+            }
+        }
+        return recentPkg
+    }
+
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP_MR1)
     private fun checkForegroundApp() {
         val usm = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val time = System.currentTimeMillis()
-        val appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 60, time)
-        if (appList.isNullOrEmpty()) return
-        val currentApp = appList.maxByOrNull { it.lastTimeUsed }?.packageName ?: return
+        val currentApp = getForegroundAppPackage(usm) ?: return
 
         val launcherPkgs = getLauncherPackages()
         val now = System.currentTimeMillis()
 
-        // Only show lock screen if foreground app is locked and not launcher/home
-        if (!lockedApps.contains(currentApp) || launcherPkgs.contains(currentApp)) {
+        // Ignore if launcher or system UI
+        if (launcherPkgs.contains(currentApp) || currentApp == "com.android.systemui") {
+            lastForegroundApp = currentApp
+            return
+        }
+
+        // If app is not locked, reset unlockedPackage and exit
+        if (!lockedApps.contains(currentApp)) {
             unlockedPackage = null
             lastForegroundApp = currentApp
             return
         }
 
-        // Only trigger lock if user is ENTERING the locked app (i.e., previous app was different)
-        if (lastForegroundApp == currentApp) {
-            // Still in the same app, do nothing
-            return
-        }
+        // If still in same foreground app, do nothing
+        if (currentApp == lastForegroundApp) return
 
-        // Debounce: don't relaunch lock screen for same app within cooldown
+        // Debounce lock per app
         if (lastLockTime.containsKey(currentApp) && now - lastLockTime[currentApp]!! < lockCooldownMs) {
             lastForegroundApp = currentApp
             return
         }
 
+        // If we already unlocked this package and user hasn't left it for at least cooldown period, skip
         if (currentApp == unlockedPackage) {
             lastForegroundApp = currentApp
             return
-        } else {
-            unlockedPackage = null
         }
 
+        // Entering locked app – launch lock screen
+        unlockedPackage = null
         lastLockTime[currentApp] = now
         lastForegroundApp = currentApp
         launchLockScreen(currentApp)

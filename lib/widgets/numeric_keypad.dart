@@ -13,20 +13,26 @@ class NumericKeypad extends StatelessWidget {
     String label, {
     VoidCallback? onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? kDarkCardColor : Colors.white;
+    final digitColor = isDark ? Colors.white : kPrimaryColor;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: bgColor,
           shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-              color: Colors.black.withOpacity(0.05),
-            ),
-          ],
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                    color: Colors.black.withOpacity(0.05),
+                  ),
+                ],
         ),
         width: 72,
         height: 72,
@@ -34,7 +40,7 @@ class NumericKeypad extends StatelessWidget {
         child: Text(
           label,
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            color: kPrimaryColor,
+            color: digitColor,
             fontWeight: FontWeight.w600,
           ),
         ),

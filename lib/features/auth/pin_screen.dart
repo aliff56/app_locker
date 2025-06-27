@@ -89,6 +89,7 @@ class _PinScreenState extends State<PinScreen> {
         height: 16,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
+          // ignore: deprecated_member_use
           color: filled ? kPrimaryColor : kPrimaryColor.withOpacity(.2),
         ),
       );
@@ -99,7 +100,7 @@ class _PinScreenState extends State<PinScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
