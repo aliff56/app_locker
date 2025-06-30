@@ -37,23 +37,37 @@ class CamouflageScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Camouflage App')),
+      backgroundColor: Colors.white,
       body: ListView.separated(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         itemCount: _options.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        separatorBuilder: (_, __) => const SizedBox(height: 16),
         itemBuilder: (context, index) {
           final opt = _options[index];
-          return Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(kRadius),
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE1E4EC)),
             ),
             child: ListTile(
-              leading: Icon(opt.iconData, color: kPrimaryColor),
-              title: Text(opt.label),
-              trailing: const Icon(Icons.chevron_right),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              leading: Icon(opt.iconData, color: const Color(0xFF162C65)),
+              title: Text(
+                opt.label,
+                style: const TextStyle(
+                  color: Color(0xFF162C65),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              trailing: const Icon(
+                Icons.chevron_right,
+                color: Color(0xFF162C65),
+              ),
               onTap: () async {
                 await NativeBridge.setAppAlias(opt.alias);
-                // Show a brief confirmation.
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Icon changed to ${opt.label}')),

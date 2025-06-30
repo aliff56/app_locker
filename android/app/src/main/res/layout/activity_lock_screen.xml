@@ -3,27 +3,53 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
-    android:padding="24dp"
-    android:background="#FF000000">
+    android:gravity="top"
+    android:padding="24dp">
 
-    <EditText
-        android:id="@+id/pinEdit"
+    <ImageView
+        android:id="@+id/lockIcon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@android:drawable/ic_lock_lock"
+        android:tint="#FFFFFF"
+        android:layout_gravity="center_horizontal"
+        android:contentDescription="Lock icon" />
+
+    <TextView
+        android:id="@+id/enterPinText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="PIN"
-        android:inputType="numberPassword"
-        android:maxLength="6"
+        android:text="Enter a pin"
         android:textColor="#FFFFFF"
-        android:textColorHint="#80FFFFFF"
-        android:background="@drawable/pin_edit_background"
-        android:textSize="24sp" />
+        android:textSize="18sp"
+        android:layout_marginTop="12dp"
+        android:layout_gravity="center_horizontal" />
 
-    <Button
-        android:id="@+id/unlockBtn"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/pinDotsLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Unlock"
-        android:layout_marginTop="16dp" />
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="24dp">
+        <!-- PIN dots will be added programmatically -->
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:layout_marginTop="32dp">
+        <GridLayout
+            android:id="@+id/keypadGrid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:alignmentMode="alignMargins"
+            android:columnCount="3"
+            android:rowCount="4"
+            android:useDefaultMargins="true"
+            android:gravity="center" />
+    </LinearLayout>
 
 </LinearLayout> 

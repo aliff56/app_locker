@@ -51,4 +51,22 @@ class NativeBridge {
     });
     return result ?? false;
   }
+
+  // Intruder config
+  static Future<Map<String, dynamic>> getIntruderConfig() async {
+    final res = await _channel.invokeMethod<Map<dynamic, dynamic>>(
+      'getIntruderConfig',
+    );
+    return res?.cast<String, dynamic>() ?? {'enabled': true, 'threshold': 3};
+  }
+
+  static Future<void> setIntruderConfig({
+    required bool enabled,
+    required int threshold,
+  }) async {
+    await _channel.invokeMethod('setIntruderConfig', {
+      'enabled': enabled,
+      'threshold': threshold,
+    });
+  }
 }

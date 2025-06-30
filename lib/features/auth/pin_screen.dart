@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/secure_storage.dart';
 import '../../widgets/numeric_keypad.dart';
 import '../../theme.dart';
@@ -24,6 +25,30 @@ class _PinScreenState extends State<PinScreen> {
   String _confirmPin = '';
   String _errorText = '';
   bool _isConfirming = false;
+  int _themeIdx = 0;
+  final List<List<Color>> _gradients = [
+    [Color(0xFFB16CEA), Color(0xFFFF5E69)],
+    [Color(0xFFFF5E69), Color(0xFFFFA07A)],
+    [Color(0xFF92FE9D), Color(0xFF00C9FF)],
+    [Color(0xFFB1B5EA), Color(0xFFB993D6)],
+    [Color(0xFF43E97B), Color(0xFF38F9D7)],
+    [Color(0xFF667EEA), Color(0xFF64B6FF)],
+    [Color(0xFF868686), Color(0xFFA3A3A3)],
+    [Color(0xFFF797A6), Color(0xFFF9A8D4)],
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTheme();
+  }
+
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _themeIdx = prefs.getInt('selected_theme') ?? 0;
+    });
+  }
 
   @override
   void dispose() {
@@ -100,31 +125,46 @@ class _PinScreenState extends State<PinScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 24),
-            Text(
-              widget.isSetup
-                  ? _isConfirming
-                        ? 'Confirm your PIN'
-                        : 'Set your 4-digit PIN'
-                  : 'Enter PIN',
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 32),
-            _buildDots(),
-            if (_errorText.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Text(_errorText, style: const TextStyle(color: Colors.red)),
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: _gradients[_themeIdx],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              const SizedBox(height: 24),
+              Text(
+                widget.isSetup
+                    ? _isConfirming
+                          ? 'Confirm your PIN'
+                          : 'Set your 4-digit PIN'
+                    : 'Enter PIN',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 32),
+              _buildDots(),
+              if (_errorText.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(_errorText, style: const TextStyle(color: Colors.red)),
+              ],
+              const Spacer(),
+              NumericKeypad(
+                onDigit: _onDigit,
+                onBack: _onBack,
+                color: Colors.white,
+              ),
+              const SizedBox(height: 24),
             ],
-            const Spacer(),
-            NumericKeypad(onDigit: _onDigit, onBack: _onBack),
-            const SizedBox(height: 24),
-          ],
+          ),
         ),
       ),
     );

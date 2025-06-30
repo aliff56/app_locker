@@ -151,29 +151,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String label,
     required VoidCallback onTap,
     bool active = false,
+    bool showArrow = false,
   }) {
-    final Color activeColor = const Color(0xFF5B2EFF);
-    final Color inactiveColor = Theme.of(context).cardColor;
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Material(
-      color: active ? activeColor : inactiveColor,
-      borderRadius: BorderRadius.circular(32),
-      elevation: 0,
-      shadowColor: Colors.black12,
+    const borderColor = Color(0xFFE1E4EC);
+    const blue = Color(0xFF162C65);
+    final bgColor = active ? blue : Colors.white;
+    final textColor = active ? Colors.white : blue;
+    return Container(
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: active ? null : Border.all(color: borderColor),
+      ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
           child: Row(
             children: [
-              Icon(
-                icon,
-                color: active
-                    ? Colors.white
-                    : (isDark ? Colors.white : Colors.black54),
-              ),
+              Icon(icon, color: textColor),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
@@ -181,12 +178,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: active
-                        ? Colors.white
-                        : (isDark ? Colors.white : Colors.black87),
+                    color: textColor,
                   ),
                 ),
               ),
+              if (showArrow) Icon(Icons.chevron_right, color: textColor),
             ],
           ),
         ),
@@ -200,28 +196,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(Constants.settingsTitle)),
+      backgroundColor: Colors.white,
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          // Account / Security
           _menuItem(
             icon: Icons.lock_outline,
-            label: _currentLockType == 'pattern'
-                ? 'Change Pattern'
-                : 'Change PIN',
+            label: 'Change PIN',
             onTap: _changePinOrPattern,
           ),
           const SizedBox(height: 16),
           _menuItem(
-            icon: Icons.security,
-            label: 'Check Permissions',
-            onTap: _openPermissions,
-          ),
-          const SizedBox(height: 16),
-          _menuItem(
             icon: Icons.shield_outlined,
-            label: _isAdmin ? 'Self-Protection: ON' : 'Self-Protection: OFF',
-            active: _isAdmin,
+            label: _isAdmin
+                ? 'Self- Protection : ON'
+                : 'Self- Protection : OFF',
             onTap: () async {
               if (_isAdmin) {
                 await NativeBridge.disableAdmin();
@@ -232,49 +221,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _loadAdminStatus();
             },
           ),
-          const SizedBox(height: 24),
-
-          // Appearance
-          _menuItem(
-            icon: isDark ? Icons.light_mode : Icons.dark_mode,
-            label: isDark ? 'Enable Light Mode' : 'Enable Dark Mode',
-            onTap: () {
-              themeModeNotifier.value = isDark
-                  ? ThemeMode.light
-                  : ThemeMode.dark;
-            },
-            active: isDark,
-          ),
           const SizedBox(height: 16),
           _menuItem(
             icon: Icons.app_registration_rounded,
-            label: 'Lock Type: ${_currentLockType.toUpperCase()}',
-            onTap: _chooseLockType,
+            label:
+                'Lock Type: ${_currentLockType[0].toUpperCase()}${_currentLockType.substring(1)}',
             active: true,
-          ),
-          const SizedBox(height: 24),
-
-          // Utilities
-          _menuItem(
-            icon: Icons.camera_alt_outlined,
-            label: 'Intruder Selfies',
-            onTap: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const IntruderPhotosScreen()),
-              );
-            },
+            onTap: _chooseLockType,
           ),
           const SizedBox(height: 16),
           _menuItem(
-            icon: Icons.visibility_off_outlined,
-            label: 'Camouflage App',
-            onTap: () async {
-              await Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => CamouflageScreen()));
-            },
+            icon: Icons.security,
+            label: 'Check Permissions',
+            onTap: _openPermissions,
           ),
-          const SizedBox(height: 24),
         ],
       ),
     );

@@ -66,9 +66,6 @@ class _AppLockerHomeState extends State<AppLockerHome>
 
     _pages = const [LockedAppsScreen(), SettingsScreen()];
     _initialize();
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() => _showSplash = false);
-    });
   }
 
   @override
@@ -123,7 +120,11 @@ class _AppLockerHomeState extends State<AppLockerHome>
   @override
   Widget build(BuildContext context) {
     if (_isLoading || _showSplash) {
-      return const SplashScreen();
+      return SplashScreen(
+        onContinue: () {
+          setState(() => _showSplash = false);
+        },
+      );
     }
 
     if (!_hasPermissions) {
@@ -150,19 +151,6 @@ class _AppLockerHomeState extends State<AppLockerHome>
       );
     }
 
-    return Scaffold(
-      body: _pages[_navIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _navIndex,
-        onTap: (i) => setState(() => _navIndex = i),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.lock), label: 'Locked Apps'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-      ),
-    );
+    return Scaffold(body: _pages[_navIndex]);
   }
 }

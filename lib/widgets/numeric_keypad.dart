@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 
 class NumericKeypad extends StatelessWidget {
-  const NumericKeypad({Key? key, required this.onDigit, required this.onBack})
-    : super(key: key);
+  const NumericKeypad({
+    Key? key,
+    required this.onDigit,
+    required this.onBack,
+    this.color,
+  }) : super(key: key);
 
   final void Function(int) onDigit;
   final VoidCallback onBack;
+  final Color? color;
 
   Widget _buildButton(
     BuildContext context,
@@ -14,8 +19,8 @@ class NumericKeypad extends StatelessWidget {
     VoidCallback? onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? kDarkCardColor : Colors.white;
-    final digitColor = isDark ? Colors.white : kPrimaryColor;
+    final bgColor = Colors.white;
+    final digitColor = color ?? (isDark ? Colors.white : kPrimaryColor);
 
     return GestureDetector(
       onTap: onTap,

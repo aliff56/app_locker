@@ -13,6 +13,7 @@ import com.example.app_locker.IntruderSelfie
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.example.app_locker/native_bridge"
+    private val THEME_CHANNEL = "app.locker/native"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -76,6 +77,12 @@ class MainActivity : FlutterActivity() {
                     prefs.edit().putString("lock_type", lockType).apply()
                     result.success(null)
                 }
+                "setThemeIndex" -> {
+                    val idx = (call.arguments as? Int) ?: 0
+                    val prefs = getSharedPreferences("app_locker_prefs", MODE_PRIVATE)
+                    prefs.edit().putInt("selected_theme", idx).apply()
+                    result.success(null)
+                }
                 "getIntruderPhotos" -> {
                     val dir = IntruderSelfie.getImagesDir(this)
                     val list = dir.listFiles()?.map { it.absolutePath } ?: emptyList()
@@ -88,6 +95,29 @@ class MainActivity : FlutterActivity() {
                     } else {
                         val deleted = java.io.File(path).delete()
                         result.success(deleted)
+                    }
+                }
+                "getIntruderConfig" -> {
+                    val prefs = getSharedPreferences("app_locker_prefs", MODE_PRIVATE)
+                    val enabled = prefs.getBoolean(LockScreenActivity.PREF_INTRUDER_ENABLED, true)
+                    val threshold = prefs.getInt(LockScreenActivity.PREF_INTRUDER_THRESHOLD, LockScreenActivity.DEFAULT_THRESHOLD)
+                    result.success(mapOf("enabled" to enabled, "threshold" to threshold))
+                }
+                "setIntruderConfig" -> {
+                    val args = call.arguments as? Map<*, *>
+                    if (args == null) {
+                        result.error("INVALID", "map expected", null)
+                    } else {
+                        val prefs = getSharedPreferences("app_locker_prefs", MODE_PRIVATE)
+                        val ed = prefs.edit()
+                        if (args.containsKey("enabled")) {
+                            ed.putBoolean(LockScreenActivity.PREF_INTRUDER_ENABLED, args["enabled"] as Boolean)
+                        }
+                        if (args.containsKey("threshold")) {
+                            ed.putInt(LockScreenActivity.PREF_INTRUDER_THRESHOLD, (args["threshold"] as Number).toInt())
+                        }
+                        ed.apply()
+                        result.success(null)
                     }
                 }
                 "isAdmin" -> {
@@ -103,6 +133,17 @@ class MainActivity : FlutterActivity() {
                     result.success(null)
                 }
                 else -> result.notImplemented()
+            }
+        }
+
+        // Theme change channel
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, THEME_CHANNEL).setMethodCallHandler { call, result ->
+            if (call.method == "themeChanged") {
+                val intent = Intent("com.example.app_locker.ACTION_CLOSE_LOCK_SCREEN")
+                sendBroadcast(intent)
+                result.success(null)
+            } else {
+                result.notImplemented()
             }
         }
     }

@@ -2,44 +2,56 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 const kPrimaryColor = Color(0xFF5B2EFF);
-const kBgColor = Color(0xFFF4F5FA);
+const kBgColor = Color(0xFF162C65);
 const kRadius = 20.0;
+const kCardColor = Color(0xFF9FACDF);
 const kDarkBgColor = Color(0xFF181A20);
-const kDarkCardColor = Color(0xFF23243A);
 
 ThemeData appTheme() {
-  final textTheme = GoogleFonts.poppinsTextTheme();
+  final textTheme = GoogleFonts.beVietnamProTextTheme(
+    ThemeData.dark().textTheme,
+  );
   return ThemeData(
     scaffoldBackgroundColor: kBgColor,
-    colorScheme: ColorScheme.fromSeed(seedColor: kPrimaryColor),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: kPrimaryColor,
+      brightness: Brightness.dark,
+    ),
     textTheme: textTheme,
     primaryColor: kPrimaryColor,
-    fontFamily: GoogleFonts.poppins().fontFamily,
+    fontFamily: GoogleFonts.beVietnamPro().fontFamily,
     useMaterial3: true,
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(kRadius),
         ),
-        backgroundColor: kPrimaryColor,
+        backgroundColor: kCardColor,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
     ),
+    cardColor: kCardColor,
     cardTheme: CardThemeData(
-      color: Colors.white,
+      color: kCardColor,
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(kRadius),
       ),
-      // ignore: deprecated_member_use
       shadowColor: Colors.black.withOpacity(0.05),
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: kBgColor,
+      foregroundColor: Colors.white,
+      elevation: 0,
     ),
   );
 }
 
 ThemeData appDarkTheme() {
-  final textTheme = GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme);
+  final textTheme = GoogleFonts.beVietnamProTextTheme(
+    ThemeData.dark().textTheme,
+  );
   return ThemeData(
     scaffoldBackgroundColor: kDarkBgColor,
     colorScheme: ColorScheme.fromSeed(
@@ -48,7 +60,7 @@ ThemeData appDarkTheme() {
     ),
     textTheme: textTheme,
     primaryColor: kPrimaryColor,
-    fontFamily: GoogleFonts.poppins().fontFamily,
+    fontFamily: GoogleFonts.beVietnamPro().fontFamily,
     useMaterial3: true,
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -60,15 +72,17 @@ ThemeData appDarkTheme() {
         elevation: 0,
       ),
     ),
+    cardColor: kCardColor,
     cardTheme: CardThemeData(
-      color: kDarkCardColor,
+      color: kCardColor,
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(kRadius),
       ),
+      shadowColor: Colors.black.withOpacity(0.05),
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: kDarkBgColor,
+      backgroundColor: kBgColor,
       foregroundColor: Colors.white,
       elevation: 0,
     ),

@@ -30,6 +30,7 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
     final notif = await Permission.notification.isGranted;
     final usage = await PermissionsManager.isUsageAccessGranted();
     final cam = await Permission.camera.isGranted;
+    if (!mounted) return;
     setState(() {
       _overlayGranted = overlay;
       _notificationGranted = notif;
@@ -70,6 +71,7 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
         borderRadius: BorderRadius.circular(kRadius),
       ),
       elevation: 4,
+      color: const Color(0xFF9FACDF),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
