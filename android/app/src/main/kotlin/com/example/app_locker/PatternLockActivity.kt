@@ -5,6 +5,7 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.itsxtt.patternlock.PatternLockView
+import com.example.app_locker.IntruderSelfie
 
 class PatternLockActivity : AppCompatActivity() {
 
@@ -29,10 +30,18 @@ class PatternLockActivity : AppCompatActivity() {
                 val stored = prefs.getString("app_lock_pattern", "")
                 val correct = entered == stored
                 if (correct) {
+                    prefs.edit().putInt(LockScreenActivity.PREF_FAILED_ATTEMPTS, 0).apply()
                     sendUnlockedBroadcast()
                     finish()
                 } else {
                     Toast.makeText(this@PatternLockActivity, "Incorrect pattern", Toast.LENGTH_SHORT).show()
+
+                    val attempts = prefs.getInt(LockScreenActivity.PREF_FAILED_ATTEMPTS, 0) + 1
+                    prefs.edit().putInt(LockScreenActivity.PREF_FAILED_ATTEMPTS, attempts).apply()
+                    if (attempts >= LockScreenActivity.MAX_FAILED_ATTEMPTS) {
+                        prefs.edit().putInt(LockScreenActivity.PREF_FAILED_ATTEMPTS, 0).apply()
+                        IntruderSelfie.capture(this@PatternLockActivity)
+                    }
                 }
                 return correct // tells view to show correct/error state
             }

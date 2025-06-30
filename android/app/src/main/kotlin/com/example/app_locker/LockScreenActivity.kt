@@ -12,6 +12,7 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import com.example.app_locker.IntruderSelfie
 
 class LockScreenActivity : AppCompatActivity() {
 
@@ -30,11 +31,21 @@ class LockScreenActivity : AppCompatActivity() {
         unlockBtn.setOnClickListener {
             val storedPin = prefs.getString(PREF_PIN, "")
             if (storedPin == pinEdit.text.toString()) {
+                // Correct PIN – reset failed attempts counter
+                prefs.edit().putInt(PREF_FAILED_ATTEMPTS, 0).apply()
                 sendUnlockedBroadcast()
                 finish()
             } else {
                 Toast.makeText(this, "Incorrect PIN", Toast.LENGTH_SHORT).show()
                 pinEdit.text.clear()
+
+                // Count failed attempts and capture intruder selfie if necessary
+                val attempts = prefs.getInt(PREF_FAILED_ATTEMPTS, 0) + 1
+                prefs.edit().putInt(PREF_FAILED_ATTEMPTS, attempts).apply()
+                if (attempts >= MAX_FAILED_ATTEMPTS) {
+                    prefs.edit().putInt(PREF_FAILED_ATTEMPTS, 0).apply()
+                    IntruderSelfie.capture(this)
+                }
             }
         }
 
@@ -75,5 +86,7 @@ class LockScreenActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_PACKAGE = "locked_package"
         const val PREF_PIN = "user_pin"
+        const val PREF_FAILED_ATTEMPTS = "failed_attempts"
+        const val MAX_FAILED_ATTEMPTS = 3
     }
 } 

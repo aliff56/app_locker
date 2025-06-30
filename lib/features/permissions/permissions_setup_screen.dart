@@ -17,6 +17,7 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
   bool _overlayGranted = false;
   bool _notificationGranted = false;
   bool _usageGranted = false;
+  bool _cameraGranted = false;
 
   @override
   void initState() {
@@ -28,10 +29,12 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
     final overlay = await Permission.systemAlertWindow.isGranted;
     final notif = await Permission.notification.isGranted;
     final usage = await PermissionsManager.isUsageAccessGranted();
+    final cam = await Permission.camera.isGranted;
     setState(() {
       _overlayGranted = overlay;
       _notificationGranted = notif;
       _usageGranted = usage;
+      _cameraGranted = cam;
     });
   }
 
@@ -47,6 +50,11 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
 
   Future<void> _requestUsage() async {
     await openAppSettings();
+    _refreshStatuses();
+  }
+
+  Future<void> _requestCamera() async {
+    await Permission.camera.request();
     _refreshStatuses();
   }
 
@@ -80,7 +88,11 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final allGranted = _overlayGranted && _notificationGranted && _usageGranted;
+    final allGranted =
+        _overlayGranted &&
+        _notificationGranted &&
+        _usageGranted &&
+        _cameraGranted;
     return Scaffold(
       appBar: AppBar(title: const Text('Permissions required')),
       body: Column(
@@ -109,6 +121,12 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
             Icons.notifications,
             _notificationGranted,
             _requestNotification,
+          ),
+          _buildCard(
+            'Camera Permission',
+            Icons.camera_alt,
+            _cameraGranted,
+            _requestCamera,
           ),
           const Spacer(),
           Padding(

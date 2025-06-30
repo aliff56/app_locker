@@ -36,4 +36,19 @@ class NativeBridge {
   static Future<void> disableAdmin() async {
     await _channel.invokeMethod('disableAdmin');
   }
+
+  // Intruder selfie utilities
+  static Future<List<String>> getIntruderPhotos() async {
+    final result = await _channel.invokeMethod<List<dynamic>>(
+      'getIntruderPhotos',
+    );
+    return result?.cast<String>() ?? [];
+  }
+
+  static Future<bool> deleteIntruderPhoto(String path) async {
+    final result = await _channel.invokeMethod<bool>('deleteIntruderPhoto', {
+      'path': path,
+    });
+    return result ?? false;
+  }
 }

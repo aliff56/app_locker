@@ -9,6 +9,7 @@ import 'camouflage_screen.dart';
 import '../../core/secure_storage.dart';
 import '../auth/pattern_setup_screen.dart';
 import '../../native_bridge.dart';
+import '../camera/intruder_photos_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -254,6 +255,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // Utilities
+          _menuItem(
+            icon: Icons.camera_alt_outlined,
+            label: 'Intruder Selfies',
+            onTap: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const IntruderPhotosScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
           _menuItem(
             icon: Icons.visibility_off_outlined,
             label: 'Camouflage App',

@@ -9,6 +9,7 @@ import android.content.ComponentName
 import android.content.pm.PackageManager
 import android.app.admin.DevicePolicyManager
 import android.content.Context
+import com.example.app_locker.IntruderSelfie
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.example.app_locker/native_bridge"
@@ -74,6 +75,20 @@ class MainActivity : FlutterActivity() {
                     val prefs = getSharedPreferences("app_locker_prefs", MODE_PRIVATE)
                     prefs.edit().putString("lock_type", lockType).apply()
                     result.success(null)
+                }
+                "getIntruderPhotos" -> {
+                    val dir = IntruderSelfie.getImagesDir(this)
+                    val list = dir.listFiles()?.map { it.absolutePath } ?: emptyList()
+                    result.success(list)
+                }
+                "deleteIntruderPhoto" -> {
+                    val path = call.argument<String>("path")
+                    if (path == null) {
+                        result.error("INVALID", "path missing", null)
+                    } else {
+                        val deleted = java.io.File(path).delete()
+                        result.success(deleted)
+                    }
                 }
                 "isAdmin" -> {
                     val active = AdminUtil.isActive(this)
