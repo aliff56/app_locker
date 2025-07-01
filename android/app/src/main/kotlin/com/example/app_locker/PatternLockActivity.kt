@@ -6,6 +6,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.itsxtt.patternlock.PatternLockView
 import com.example.app_locker.IntruderSelfie
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 
 class PatternLockActivity : AppCompatActivity() {
 
@@ -75,6 +78,21 @@ class PatternLockActivity : AppCompatActivity() {
                 return correct // tells view to show correct/error state
             }
         })
+
+        // Biometric fallback (same as PIN logic)
+        if (BiometricManager.from(this).canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS) {
+            val prompt = BiometricPrompt(this, ContextCompat.getMainExecutor(this), object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+                    sendUnlockedBroadcast()
+                    finish()
+                }
+            })
+            prompt.authenticate(BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Unlock App")
+                .setNegativeButtonText("Cancel")
+                .build())
+        }
     }
 
     override fun onResume() {

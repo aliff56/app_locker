@@ -17,7 +17,7 @@ import android.app.usage.UsageEvents
 class ForegroundLockService : Service() {
 
     private val timer = Timer()
-    private val checkIntervalMs = 500L
+    private val checkIntervalMs = 200L
     private val prefs by lazy {
         getSharedPreferences("app_locker_prefs", Context.MODE_PRIVATE)
     }
@@ -29,6 +29,8 @@ class ForegroundLockService : Service() {
                 val pkg = intent.getStringExtra(EXTRA_PACKAGE) ?: return
                 // Mark this package as unlocked until user leaves it
                 unlockedPackage = pkg
+                // Also set last lock time to now so we don't immediately relaunch
+                lastLockTime[pkg] = System.currentTimeMillis()
             }
         }
     }
