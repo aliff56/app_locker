@@ -10,6 +10,9 @@ import '../../core/secure_storage.dart';
 import '../auth/pattern_setup_screen.dart';
 import '../../native_bridge.dart';
 import '../camera/intruder_photos_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../theme.dart';
+import 'package:share_plus/share_plus.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -18,13 +21,15 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends State<SettingsScreen>
+    with WidgetsBindingObserver {
   String _currentLockType = 'pin';
   bool _isAdmin = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadLockType();
     _loadAdminStatus();
   }
@@ -41,9 +46,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     // Restore system orientations
     SystemChrome.setPreferredOrientations(DeviceOrientation.values);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadAdminStatus();
+    }
   }
 
   Future<void> _loadLockType() async {
@@ -146,6 +159,222 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _sendFeedbackEmail() async {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: 'aag44105@gmail.com',
+      query: Uri.encodeFull('subject=App Locker Feedback'),
+    );
+    try {
+      await launchUrl(emailUri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open the email app.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _showRatingDialog() async {
+    const blue = kBgColor;
+    int rating = 0;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            Widget _buildEmoji() {
+              late String emoji;
+              late String msg;
+              late Color iconColor;
+
+              if (rating == 0) {
+                emoji = '😃';
+                msg = 'Give us a Rating';
+                iconColor = kPrimaryColor;
+              } else if (rating == 5) {
+                emoji = '😁';
+                msg = 'We like you too!';
+                iconColor = Colors.green;
+              } else if (rating == 4) {
+                emoji = '😊';
+                msg = 'Thanks for the rating!';
+                iconColor = Colors.green;
+              } else if (rating == 3) {
+                emoji = '😐';
+                msg = 'Appreciate your feedback!';
+                iconColor = kPrimaryColor;
+              } else if (rating == 2) {
+                emoji = '🙁';
+                msg = "We'll try to do better.";
+                iconColor = Colors.orange;
+              } else {
+                emoji = '😞';
+                msg = "We're sorry to hear that.";
+                iconColor = Colors.redAccent;
+              }
+
+              return Column(
+                children: [
+                  const SizedBox(height: 16),
+                  Text(emoji, style: TextStyle(fontSize: 40)),
+                  const SizedBox(height: 12),
+                  Text(
+                    msg,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: kBgColor,
+                    ),
+                  ),
+                ],
+              );
+            }
+
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+              title: Center(
+                child: Text(
+                  'Rate Us !',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: kBgColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (index) {
+                      final selected = index < rating;
+                      return IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        splashRadius: 20,
+                        onPressed: () => setState(() => rating = index + 1),
+                        icon: Icon(
+                          selected
+                              ? Icons.star_rounded
+                              : Icons.star_outline_rounded,
+                          color: selected ? kBgColor : kCardColor,
+                          size: 32,
+                        ),
+                      );
+                    }),
+                  ),
+                  _buildEmoji(),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kBgColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Play Store link coming soon!'),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text('Rate on Play Store'),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text(
+                      'No thanks',
+                      style: TextStyle(color: kBgColor),
+                    ),
+                  ),
+                ],
+              ),
+              actions: const [],
+              insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _shareApp() async {
+    await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Container(
+          color: Colors.white,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Share App',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: kBgColor,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.share, color: kBgColor),
+                title: const Text('Share', style: TextStyle(color: kBgColor)),
+                onTap: () {
+                  Share.share('LINK');
+                  Navigator.of(ctx).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.file_copy, color: kBgColor),
+                title: const Text(
+                  'Copy Link',
+                  style: TextStyle(color: kBgColor),
+                ),
+                onTap: () {
+                  Clipboard.setData(const ClipboardData(text: 'LINK'));
+                  Navigator.of(ctx).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Link copied to clipboard.')),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _menuItem({
     required IconData icon,
     required String label,
@@ -154,7 +383,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     bool showArrow = false,
   }) {
     const borderColor = Color(0xFFE1E4EC);
-    const blue = Color(0xFF162C65);
+    const blue = kBgColor;
     final bgColor = active ? blue : Colors.white;
     final textColor = active ? Colors.white : blue;
     return Container(
@@ -201,7 +430,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.all(24),
         children: [
           _menuItem(
-            icon: Icons.lock_outline,
+            icon: Icons.lock,
             label: 'Change PIN',
             onTap: _changePinOrPattern,
           ),
@@ -220,6 +449,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               await Future.delayed(const Duration(milliseconds: 500));
               _loadAdminStatus();
             },
+            active: _isAdmin,
           ),
           const SizedBox(height: 16),
           _menuItem(
@@ -234,6 +464,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.security,
             label: 'Check Permissions',
             onTap: _openPermissions,
+          ),
+          const SizedBox(height: 16),
+          _menuItem(
+            icon: Icons.share,
+            label: 'Share With Friends',
+            onTap: _shareApp,
+          ),
+          const SizedBox(height: 16),
+          _menuItem(
+            icon: Icons.feedback_rounded,
+            label: 'Feedback',
+            onTap: _sendFeedbackEmail,
+          ),
+          const SizedBox(height: 16),
+          _menuItem(
+            icon: Icons.star_rate_rounded,
+            label: 'Rate Us',
+            onTap: _showRatingDialog,
+          ),
+          const SizedBox(height: 16),
+          _menuItem(
+            icon: Icons.privacy_tip_rounded,
+            label: 'Privacy Policy',
+            onTap: () {},
+          ),
+          const SizedBox(height: 16),
+          _menuItem(
+            icon: Icons.exit_to_app_rounded,
+            label: 'Exit',
+            onTap: () {
+              SystemNavigator.pop();
+            },
           ),
         ],
       ),
