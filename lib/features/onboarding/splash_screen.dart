@@ -8,7 +8,7 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F5FA),
+      backgroundColor: const Color(0xFF162C65),
       body: SafeArea(
         child: Stack(
           children: [
@@ -19,24 +19,21 @@ class SplashScreen extends StatelessWidget {
                 children: [
                   // App icon (neumorphic style subtle shadow)
                   Container(
-                    width: 112,
-                    height: 112,
+                    width: 130,
+                    height: 130,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(color: Colors.white, width: 5),
                     ),
                     child: Center(
-                      child: Image.asset(
-                        'assets/icon/app_icon.png', // ensure path in pubspec
-                        width: 64,
-                        height: 64,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(25),
+                        child: Image.asset(
+                          'assets/icon/app_icon.png',
+                          width: 120,
+                          height: 120,
+                        ),
                       ),
                     ),
                   ),
@@ -46,7 +43,7 @@ class SplashScreen extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 26,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      color: const Color.fromARGB(221, 255, 255, 255),
                     ),
                   ),
                 ],
@@ -54,18 +51,30 @@ class SplashScreen extends StatelessWidget {
             ),
             // "Get Started" button at bottom
             Positioned(
-              left: 16,
-              right: 16,
-              bottom: 32,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(56),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+              left: 0,
+              right: 0,
+              bottom: 90,
+              child: Center(
+                child: SizedBox(
+                  width: 180,
+                  height: 44,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2B63B5),
+                      foregroundColor: Colors.white,
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: onContinue,
+                    child: const Text('Get Started'),
                   ),
                 ),
-                onPressed: onContinue,
-                child: const Text('Get Started'),
               ),
             ),
           ],

@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import '../../theme.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class LockedAppsScreen extends StatefulWidget {
   const LockedAppsScreen({super.key});
@@ -27,28 +28,38 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
   String _searchQuery = '';
   final List<Map<String, dynamic>> _features = [
     {
-      'label': 'Settings',
-      'icon': Icons.settings,
-      'color': Color(0xFFB36AFF),
-      'screen': SettingsScreen(),
-    },
-    {
-      'label': 'Intruder',
-      'icon': Icons.person_search,
-      'color': Color(0xFF50E3C2),
-      'screen': IntruderPhotosScreen(),
-    },
-    {
       'label': 'Camouflage',
-      'icon': Icons.visibility_off,
-      'color': Color(0xFF4A90E2),
+      'icon': FontAwesomeIcons.eyeSlash,
+      'gradient': LinearGradient(
+        colors: [Color(0xFF6DD5FA), Color(0xFF2980F2)],
+      ),
       'screen': CamouflageScreen(),
     },
     {
+      'label': 'Intruder',
+      'icon': FontAwesomeIcons.userSecret,
+      'gradient': LinearGradient(
+        colors: [Color(0xFF43E97B), Color(0xFF38F9D7)],
+      ),
+      'screen': IntruderPhotosScreen(),
+    },
+    {
       'label': 'Themes',
-      'icon': Icons.palette,
-      'color': Color(0xFF6C63FF),
+      'icon': FontAwesomeIcons.palette,
+      'gradient': LinearGradient(
+        colors: [Color(0xFFFF9068), Color(0xFFFF4B1F)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
       'screen': ThemeSelectionScreen(),
+    },
+    {
+      'label': 'Setting',
+      'icon': FontAwesomeIcons.gear,
+      'gradient': LinearGradient(
+        colors: [Color(0xFFB36AFF), Color(0xFFFA8EFF)],
+      ),
+      'screen': SettingsScreen(),
     },
   ];
   final List<Map<String, String>> _filters = [
@@ -419,11 +430,16 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
           ),
           // Feature buttons
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: 10),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: _features
-                  .map((f) => _featureButton(context, f))
+                  .map(
+                    (f) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: _featureButton(context, f),
+                    ),
+                  )
                   .toList(),
             ),
           ),
@@ -487,21 +503,32 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
       child: Column(
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
-              color: f['color'] as Color,
+              gradient: f['gradient'] as LinearGradient,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(f['icon'] as IconData, color: Colors.white, size: 32),
+            child: Center(
+              child: f['icon'] == FontAwesomeIcons.eyeSlash
+                  ? Transform.translate(
+                      offset: Offset(-4, 0),
+                      child: Icon(
+                        f['icon'] as IconData,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    )
+                  : Icon(f['icon'] as IconData, color: Colors.white, size: 30),
+            ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 2),
           Text(
             f['label'] as String,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -793,7 +820,7 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 30),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: isSelected
@@ -824,6 +851,7 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                             ),
                           ),
                   ),
+                  const SizedBox(height: 20),
                 ],
               ),
             );

@@ -82,16 +82,19 @@ class _AppLockerHomeState extends State<AppLockerHome>
   }
 
   Future<void> _initialize() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     await _checkPermissions();
     if (_hasPermissions) {
       await _checkSetup();
     }
+    if (!mounted) return;
     setState(() => _isLoading = false);
   }
 
   Future<void> _checkPermissions() async {
     final hasPermissions = await _permissionsManager.checkAllPermissions();
+    if (!mounted) return;
     if (hasPermissions == _hasPermissions) return;
     setState(() => _hasPermissions = hasPermissions);
     if (hasPermissions) {
@@ -101,7 +104,11 @@ class _AppLockerHomeState extends State<AppLockerHome>
 
   Future<void> _checkSetup() async {
     final isSetupComplete = await _secureStorage.isSetupComplete();
-    setState(() => _isSetupComplete = isSetupComplete);
+    if (!mounted) return;
+    setState(() {
+      _isSetupComplete = isSetupComplete;
+      debugPrint('✔ _isSetupComplete set true');
+    });
   }
 
   Future<void> _refreshNativeLockedList() async {
@@ -122,6 +129,7 @@ class _AppLockerHomeState extends State<AppLockerHome>
     if (_isLoading || _showSplash) {
       return SplashScreen(
         onContinue: () {
+          if (!mounted) return;
           setState(() => _showSplash = false);
         },
       );
@@ -131,8 +139,10 @@ class _AppLockerHomeState extends State<AppLockerHome>
       return PermissionsSetupScreen(
         onAllGranted: () async {
           await _checkPermissions();
+          if (!mounted) return;
           if (_hasPermissions) {
             await _checkSetup();
+            if (!mounted) return;
             setState(() {});
           }
         },
@@ -142,11 +152,13 @@ class _AppLockerHomeState extends State<AppLockerHome>
     if (!_isSetupComplete) {
       return PinSetupScreen(
         onSetupComplete: () async {
-          await _checkSetup();
-          await _refreshNativeLockedList();
-          if (_isSetupComplete) {
-            await _refreshNativeLockedList();
+          if (mounted) {
+            setState(() {
+              _isSetupComplete = true;
+              debugPrint('✔ _isSetupComplete set true');
+            });
           }
+          await _refreshNativeLockedList();
         },
       );
     }

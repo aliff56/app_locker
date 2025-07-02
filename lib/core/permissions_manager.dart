@@ -76,9 +76,10 @@ class PermissionsManager {
       final notificationGranted = await Permission.notification.isGranted;
       final overlayGranted = await Permission.systemAlertWindow.isGranted;
       final usageStatsGranted = await isUsageAccessGranted();
+      final cameraGranted = await Permission.camera.isGranted;
 
       debugPrint(
-        '   [AppLocker] Notification: $notificationGranted, Overlay: $overlayGranted, Usage Stats: $usageStatsGranted',
+        '   [AppLocker] Notification: $notificationGranted, Overlay: $overlayGranted, Usage Stats: $usageStatsGranted, Camera: $cameraGranted',
       );
 
       // Try to actually use the permissions to verify they work
@@ -113,7 +114,10 @@ class PermissionsManager {
       }
 
       final allGranted =
-          notificationGranted && overlayGranted && usageStatsGranted;
+          notificationGranted &&
+          overlayGranted &&
+          usageStatsGranted &&
+          cameraGranted;
       debugPrint(
         '   [AppLocker] All permissions check successful: $allGranted',
       );

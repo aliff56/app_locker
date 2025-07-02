@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../native_bridge.dart';
 import '../../theme.dart';
 
@@ -24,12 +25,12 @@ class CamouflageScreen extends StatelessWidget {
     _AliasOption(
       alias: 'com.example.app_locker.alias.ClockAlias',
       label: 'Clock',
-      iconData: Icons.access_time,
+      iconData: FontAwesomeIcons.solidClock,
     ),
     _AliasOption(
       alias: 'com.example.app_locker.alias.CalendarAlias',
       label: 'Calendar',
-      iconData: Icons.calendar_today,
+      iconData: FontAwesomeIcons.solidCalendar,
     ),
   ];
 

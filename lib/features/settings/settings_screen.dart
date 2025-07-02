@@ -13,6 +13,7 @@ import '../camera/intruder_photos_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../theme.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -72,21 +73,44 @@ class _SettingsScreenState extends State<SettingsScreen>
   Future<void> _chooseLockType() async {
     final selected = await showModalBottomSheet<String>(
       context: context,
-      builder: (_) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.password),
-              title: const Text('PIN'),
-              onTap: () => Navigator.pop(context, 'pin'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.grid_3x3),
-              title: const Text('Pattern'),
-              onTap: () => Navigator.pop(context, 'pattern'),
-            ),
-          ],
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Container(
+          color: Colors.white,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Select Lock Type',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF162C65),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.password, color: Color(0xFF162C65)),
+                title: const Text(
+                  'PIN',
+                  style: TextStyle(color: Color(0xFF162C65)),
+                ),
+                onTap: () => Navigator.pop(ctx, 'pin'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.grid_3x3, color: Color(0xFF162C65)),
+                title: const Text(
+                  'Pattern',
+                  style: TextStyle(color: Color(0xFF162C65)),
+                ),
+                onTap: () => Navigator.pop(ctx, 'pattern'),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -436,7 +460,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           ),
           const SizedBox(height: 16),
           _menuItem(
-            icon: Icons.shield_outlined,
+            icon: Icons.verified_user_sharp,
             label: _isAdmin
                 ? 'Self- Protection : ON'
                 : 'Self- Protection : OFF',
@@ -461,37 +485,37 @@ class _SettingsScreenState extends State<SettingsScreen>
           ),
           const SizedBox(height: 16),
           _menuItem(
-            icon: Icons.security,
+            icon: Icons.shield_sharp,
             label: 'Check Permissions',
             onTap: _openPermissions,
           ),
           const SizedBox(height: 16),
           _menuItem(
-            icon: Icons.share,
+            icon: FontAwesomeIcons.shareNodes,
             label: 'Share With Friends',
             onTap: _shareApp,
           ),
           const SizedBox(height: 16),
           _menuItem(
-            icon: Icons.feedback_rounded,
+            icon: FontAwesomeIcons.solidMessage,
             label: 'Feedback',
             onTap: _sendFeedbackEmail,
           ),
           const SizedBox(height: 16),
           _menuItem(
-            icon: Icons.star_rate_rounded,
+            icon: FontAwesomeIcons.solidThumbsUp,
             label: 'Rate Us',
             onTap: _showRatingDialog,
           ),
           const SizedBox(height: 16),
           _menuItem(
-            icon: Icons.privacy_tip_rounded,
+            icon: FontAwesomeIcons.fileShield,
             label: 'Privacy Policy',
             onTap: () {},
           ),
           const SizedBox(height: 16),
           _menuItem(
-            icon: Icons.exit_to_app_rounded,
+            icon: FontAwesomeIcons.doorOpen,
             label: 'Exit',
             onTap: () {
               SystemNavigator.pop();

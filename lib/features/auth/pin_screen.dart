@@ -97,7 +97,9 @@ class _PinScreenState extends State<PinScreen> {
   void _onDigit(int n) {
     if (_pin.length >= 4) return;
     setState(() => _pin += n.toString());
-    if (_pin.length == 4) _handleComplete();
+    if (_pin.length == 4) {
+      _handleComplete();
+    }
   }
 
   void _onBack() {

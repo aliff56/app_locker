@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../native_bridge.dart';
 
 class IntruderPhotosScreen extends StatefulWidget {
@@ -79,7 +80,27 @@ class _IntruderPhotosScreenState extends State<IntruderPhotosScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _paths.isEmpty
-          ? const Center(child: Text('No intruder selfies yet'))
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    FontAwesomeIcons.userSecret,
+                    size: 60,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'No intruder selfies yet',
+                    style: TextStyle(
+                      color: Colors.black54,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            )
           : GridView.builder(
               padding: const EdgeInsets.all(8),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

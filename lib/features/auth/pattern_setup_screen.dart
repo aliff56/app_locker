@@ -3,6 +3,7 @@ import 'package:pattern_lock/pattern_lock.dart';
 import '../../core/secure_storage.dart';
 import '../../theme.dart';
 import 'package:app_locker/features/auth/pin_setup_screen.dart';
+import 'package:flutter/foundation.dart';
 
 class PatternSetupScreen extends StatefulWidget {
   final VoidCallback onSetupComplete;
@@ -17,9 +18,15 @@ class _PatternSetupScreenState extends State<PatternSetupScreen> {
   String _error = '';
 
   Future<void> _savePattern(List<int> pattern) async {
+    debugPrint('✔ _savePattern called');
     await SecureStorage().savePattern(pattern.join('-'));
     await SecureStorage().saveLockType('pattern');
+    await SecureStorage().setSetupComplete(true);
+    await Future.delayed(const Duration(milliseconds: 100));
     widget.onSetupComplete();
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -36,7 +43,7 @@ class _PatternSetupScreenState extends State<PatternSetupScreen> {
               height: 96,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.08),
@@ -46,10 +53,13 @@ class _PatternSetupScreenState extends State<PatternSetupScreen> {
                 ],
               ),
               child: Center(
-                child: Image.asset(
-                  'assets/icon/app_icon.png',
-                  width: 64,
-                  height: 64,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    'assets/icon/app_icon.png',
+                    width: 95,
+                    height: 95,
+                  ),
                 ),
               ),
             ),
@@ -83,12 +93,18 @@ class _PatternSetupScreenState extends State<PatternSetupScreen> {
                         _error = 'Draw pattern again to confirm';
                       });
                     } else {
-                      if (_tempPattern!.join('-') == input.join('-')) {
+                      final same = listEquals(_tempPattern, input);
+                      final reversed = listEquals(
+                        _tempPattern!.reversed.toList(),
+                        input,
+                      );
+                      if (same || reversed) {
                         _savePattern(input);
                       } else {
                         setState(() {
                           _tempPattern = null;
-                          _error = 'Patterns do not match. Try again.';
+                          _error =
+                              'Patterns do not match. Draw the same pattern again.';
                         });
                       }
                     }
@@ -97,7 +113,13 @@ class _PatternSetupScreenState extends State<PatternSetupScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            Text('or', style: TextStyle(color: Colors.white.withOpacity(0.8))),
+            Text(
+              'or',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 18,
+              ),
+            ),
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),

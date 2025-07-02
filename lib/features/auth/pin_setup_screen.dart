@@ -21,7 +21,9 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   void _onDigit(int n) {
     if (_pin.length >= 4) return;
     setState(() => _pin += n.toString());
-    if (_pin.length == 4) _handleComplete();
+    if (_pin.length == 4) {
+      _handleComplete();
+    }
   }
 
   void _onBack() {
@@ -41,7 +43,12 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
     if (_pin == _confirmPin) {
       await SecureStorage().savePin(_confirmPin);
       await SecureStorage().setSetupComplete(true);
+      await Future.delayed(const Duration(milliseconds: 100));
       widget.onSetupComplete();
+      debugPrint('✔ onSetupComplete reached (from Pin/Pattern)');
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
     } else {
       setState(() {
         _errorText = 'PINs do not match. Try again.';
@@ -84,7 +91,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
               height: 96,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.08),
@@ -94,10 +101,13 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
                 ],
               ),
               child: Center(
-                child: Image.asset(
-                  'assets/icon/app_icon.png',
-                  width: 64,
-                  height: 64,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    'assets/icon/app_icon.png',
+                    width: 95,
+                    height: 95,
+                  ),
                 ),
               ),
             ),
@@ -123,7 +133,13 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
               color: Color(0xFF162C65),
             ),
             const SizedBox(height: 24),
-            Text('or', style: TextStyle(color: Colors.white.withOpacity(0.8))),
+            Text(
+              'or',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 18,
+              ),
+            ),
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -140,7 +156,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
                   onPressed: () async {
                     await SecureStorage().saveLockType('pattern');
                     if (context.mounted) {
-                      Navigator.of(context).pushReplacement(
+                      Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => PatternSetupScreen(
                             onSetupComplete: widget.onSetupComplete,

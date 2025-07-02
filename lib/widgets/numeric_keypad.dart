@@ -6,11 +6,13 @@ class NumericKeypad extends StatelessWidget {
     Key? key,
     required this.onDigit,
     required this.onBack,
+    this.onConfirm,
     this.color,
   }) : super(key: key);
 
   final void Function(int) onDigit;
   final VoidCallback onBack;
+  final VoidCallback? onConfirm;
   final Color? color;
 
   Widget _buildButton(
@@ -55,7 +57,20 @@ class NumericKeypad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final buttons = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '<'];
+    final buttons = [
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      onConfirm == null ? '' : '✓',
+      '0',
+      '<',
+    ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: GridView.builder(
@@ -70,6 +85,9 @@ class NumericKeypad extends StatelessWidget {
           if (label.isEmpty) return const SizedBox.shrink();
           if (label == '<') {
             return _buildButton(context, '⌫', onTap: onBack);
+          }
+          if (label == '✓') {
+            return _buildButton(context, '✓', onTap: onConfirm);
           }
           return _buildButton(
             context,
