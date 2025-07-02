@@ -64,7 +64,7 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 4,
-      color: const Color(0xFF9FACDF),
+      color: const Color(0xFF8792BD),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -98,7 +98,7 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Permissions required')),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
         child: Column(
           children: [
             const Padding(
