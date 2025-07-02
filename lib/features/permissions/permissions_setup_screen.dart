@@ -59,29 +59,29 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
     _refreshStatuses();
   }
 
-  Widget _buildCard(
-    String title,
-    IconData icon,
-    bool granted,
-    VoidCallback onGrant,
-  ) {
+  Widget _buildCard(String title, bool granted, VoidCallback onGrant) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(kRadius),
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 4,
       color: const Color(0xFF9FACDF),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Icon(icon, color: granted ? Colors.green : kPrimaryColor),
-            const SizedBox(width: 16),
-            Expanded(child: Text(title, style: const TextStyle(fontSize: 16))),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
             if (!granted)
               ElevatedButton(onPressed: onGrant, child: const Text('Grant')),
-            if (granted) const Icon(Icons.check_circle, color: Colors.green),
+            if (granted)
+              const Icon(Icons.check_circle, color: Color(0xFF1AD36D)),
           ],
         ),
       ),
@@ -97,51 +97,47 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
         _cameraGranted;
     return Scaffold(
       appBar: AppBar(title: const Text('Permissions required')),
-      body: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'To work properly, App Locker needs the following permissions. Grant each, then press Continue.',
-              style: TextStyle(fontSize: 16),
-            ),
-          ),
-          _buildCard(
-            'Usage Access',
-            Icons.visibility,
-            _usageGranted,
-            _requestUsage,
-          ),
-          _buildCard(
-            'Overlay Permission',
-            Icons.layers,
-            _overlayGranted,
-            _requestOverlay,
-          ),
-          _buildCard(
-            'Notification Access',
-            Icons.notifications,
-            _notificationGranted,
-            _requestNotification,
-          ),
-          _buildCard(
-            'Camera Permission',
-            Icons.camera_alt,
-            _cameraGranted,
-            _requestCamera,
-          ),
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: allGranted ? widget.onAllGranted : null,
-                child: const Text('Continue →'),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'To work properly, App Locker needs the following permissions. Grant each, then press Continue.',
+                style: TextStyle(fontSize: 16),
               ),
             ),
-          ),
-        ],
+            _buildCard('Usage Access', _usageGranted, _requestUsage),
+            _buildCard('Overlay Permission', _overlayGranted, _requestOverlay),
+            _buildCard(
+              'Notification Access',
+              _notificationGranted,
+              _requestNotification,
+            ),
+            _buildCard('Camera Permission', _cameraGranted, _requestCamera),
+            const Spacer(),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2B63B5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: allGranted ? widget.onAllGranted : null,
+                  child: const Text(
+                    'Continue',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

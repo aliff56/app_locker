@@ -238,10 +238,14 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
           ),
         ),
         trailing: IconButton(
-          icon: Icon(
-            locked ? Icons.lock : Icons.lock_open,
-            color: locked ? Colors.green : Colors.grey,
-          ),
+          icon: locked
+              ? const Icon(Icons.lock, color: Colors.green)
+              : Image.asset(
+                  'assets/icon/vector.png',
+                  width: 24,
+                  height: 24,
+                  color: Colors.grey, // remove if PNG already styled
+                ),
           onPressed: () async {
             if (locked) {
               final confirmed = await showDialog<bool>(
