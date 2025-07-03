@@ -23,16 +23,16 @@ class SplashScreen extends StatelessWidget {
                     height: 130,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(color: Colors.white, width: 5),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: Colors.white, width: 2),
                     ),
                     child: Center(
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(16),
                         child: Image.asset(
                           'assets/icon/app_icon.png',
-                          width: 120,
-                          height: 120,
+                          width: 130,
+                          height: 130,
                         ),
                       ),
                     ),
@@ -40,7 +40,7 @@ class SplashScreen extends StatelessWidget {
                   const SizedBox(height: 32),
                   Text(
                     'App Lock',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.beVietnamPro(
                       fontSize: 26,
                       fontWeight: FontWeight.w600,
                       color: const Color.fromARGB(221, 255, 255, 255),

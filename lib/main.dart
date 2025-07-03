@@ -10,6 +10,8 @@ import 'features/settings/settings_screen.dart';
 import 'native_bridge.dart';
 import 'theme.dart';
 import 'features/onboarding/splash_screen.dart';
+import 'features/auth/applock_pattern_unlock.dart';
+import 'features/auth/applock_pin_unlock.dart';
 
 final themeModeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
 
@@ -55,6 +57,8 @@ class _AppLockerHomeState extends State<AppLockerHome>
   bool _hasPermissions = false;
   bool _isSetupComplete = false;
   bool _showSplash = true;
+  bool _isAuthenticated = false;
+  String? _lockType; // 'pin' or 'pattern'
 
   int _navIndex = 0;
   late final List<Widget> _pages;
@@ -66,6 +70,9 @@ class _AppLockerHomeState extends State<AppLockerHome>
 
     _pages = const [LockedAppsScreen(), SettingsScreen()];
     _initialize();
+
+    // Load lock type for authentication later
+    _loadLockType();
   }
 
   @override
@@ -78,6 +85,12 @@ class _AppLockerHomeState extends State<AppLockerHome>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _checkPermissions();
+      // Require re-authentication on resume
+      if (mounted) {
+        setState(() {
+          _isAuthenticated = false;
+        });
+      }
     }
   }
 
@@ -109,6 +122,15 @@ class _AppLockerHomeState extends State<AppLockerHome>
       _isSetupComplete = isSetupComplete;
       debugPrint('✔ _isSetupComplete set true');
     });
+    if (isSetupComplete) {
+      await _loadLockType();
+    }
+  }
+
+  Future<void> _loadLockType() async {
+    final type = await _secureStorage.getLockType();
+    if (!mounted) return;
+    setState(() => _lockType = type);
   }
 
   Future<void> _refreshNativeLockedList() async {
@@ -150,6 +172,7 @@ class _AppLockerHomeState extends State<AppLockerHome>
     }
 
     if (!_isSetupComplete) {
+      // Only show setup screens, never lock screens, before setup is complete
       return PinSetupScreen(
         onSetupComplete: () async {
           if (mounted) {
@@ -159,6 +182,38 @@ class _AppLockerHomeState extends State<AppLockerHome>
             });
           }
           await _refreshNativeLockedList();
+          await _loadLockType();
+        },
+      );
+    }
+
+    // Wait until lock type known
+    if (_lockType == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Only show lock screens after setup is complete
+    if (_isSetupComplete && !_isAuthenticated) {
+      return FutureBuilder<String>(
+        future: _secureStorage.getLockType(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final lockType = snapshot.data;
+          if (lockType == 'pattern') {
+            return AppLockPatternUnlock(
+              onSuccess: () {
+                if (mounted) setState(() => _isAuthenticated = true);
+              },
+            );
+          } else {
+            return AppLockPinUnlock(
+              onSuccess: () {
+                if (mounted) setState(() => _isAuthenticated = true);
+              },
+            );
+          }
         },
       );
     }

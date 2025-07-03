@@ -29,35 +29,41 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
   final List<Map<String, dynamic>> _features = [
     {
       'label': 'Camouflage',
-      'icon': FontAwesomeIcons.eyeSlash,
-      'gradient': LinearGradient(
-        colors: [Color(0xFF6DD5FA), Color(0xFF2980F2)],
+      'asset': 'assets/icon/camouflage.png',
+      'gradient': const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF1C96FF), Color(0xFF88DEFF)],
       ),
       'screen': CamouflageScreen(),
     },
     {
       'label': 'Intruder',
-      'icon': FontAwesomeIcons.userSecret,
-      'gradient': LinearGradient(
-        colors: [Color(0xFF43E97B), Color(0xFF38F9D7)],
+      'asset': 'assets/icon/intruder.png',
+      'gradient': const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF03C8B4), Color(0xFF6FFBBC)],
       ),
       'screen': IntruderPhotosScreen(),
     },
     {
       'label': 'Themes',
-      'icon': FontAwesomeIcons.palette,
-      'gradient': LinearGradient(
-        colors: [Color(0xFFFF9068), Color(0xFFFF4B1F)],
+      'asset': 'assets/icon/themes.png',
+      'gradient': const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
+        colors: [Color(0xFFFF6A3A), Color(0xFFFB8A8E)],
       ),
       'screen': ThemeSelectionScreen(),
     },
     {
       'label': 'Setting',
-      'icon': FontAwesomeIcons.gear,
-      'gradient': LinearGradient(
-        colors: [Color(0xFFB36AFF), Color(0xFFFA8EFF)],
+      'asset': 'assets/icon/settings.png',
+      'gradient': const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFFC852FF), Color(0xFFD58CFF)],
       ),
       'screen': SettingsScreen(),
     },
@@ -97,9 +103,13 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
     setState(() => _isLoading = true);
     try {
       final apps = await InstalledApps.getInstalledApps(false, true);
+      // Filter out AppLock itself
+      final filteredApps = apps
+          .where((a) => a.packageName != 'com.example.app_locker')
+          .toList();
       if (mounted) {
         setState(() {
-          _installedApps = apps;
+          _installedApps = filteredApps;
           _isLoading = false;
         });
       }
@@ -224,14 +234,14 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      elevation: 4,
+      elevation: 6,
       child: ListTile(
         leading: app.icon != null
             ? Image.memory(app.icon!, width: 56, height: 56)
             : const Icon(Icons.android, size: 56),
         title: Text(
           app.name ?? app.packageName,
-          style: GoogleFonts.plusJakartaSans(
+          style: GoogleFonts.beVietnamPro(
             color: Color(0xFF162C65),
             fontWeight: FontWeight.w600,
             fontSize: 14,
@@ -432,11 +442,11 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
                     ),
             ),
           ),
-          // Feature buttons
+          // Feature buttons row with reduced side padding
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: _features
                   .map(
                     (f) => Padding(
@@ -511,27 +521,33 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
             height: 60,
             decoration: BoxDecoration(
               gradient: f['gradient'] as LinearGradient,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
-              child: f['icon'] == FontAwesomeIcons.eyeSlash
-                  ? Transform.translate(
-                      offset: Offset(-4, 0),
-                      child: Icon(
-                        f['icon'] as IconData,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                    )
-                  : Icon(f['icon'] as IconData, color: Colors.white, size: 30),
+              child: f.containsKey('asset')
+                  ? Image.asset(f['asset'] as String, width: 36, height: 36)
+                  : (f['icon'] == FontAwesomeIcons.eyeSlash
+                        ? Transform.translate(
+                            offset: Offset(-4, 0),
+                            child: Icon(
+                              f['icon'] as IconData,
+                              color: Colors.white,
+                              size: 36,
+                            ),
+                          )
+                        : Icon(
+                            f['icon'] as IconData,
+                            color: Colors.white,
+                            size: 36,
+                          )),
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 6),
           Text(
             f['label'] as String,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 11,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -550,7 +566,7 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           decoration: BoxDecoration(
             color: selected ? const Color(0xFF162C65) : const Color(0xFFF4F5FA),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: selected ? const Color(0xFF162C65) : Colors.transparent,
             ),
@@ -700,14 +716,22 @@ class ThemeSelectionScreen extends StatefulWidget {
 class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
   int _selectedTheme = 0;
   final List<List<Color>> _gradients = [
-    [Color(0xFFB16CEA), Color(0xFFFF5E69)],
-    [Color(0xFFFF5E69), Color(0xFFFFA07A)],
-    [Color(0xFF92FE9D), Color(0xFF00C9FF)],
-    [Color(0xFFB1B5EA), Color(0xFFB993D6)],
-    [Color(0xFF43E97B), Color(0xFF38F9D7)],
-    [Color(0xFF667EEA), Color(0xFF64B6FF)],
-    [Color(0xFF868686), Color(0xFFA3A3A3)],
-    [Color(0xFFF797A6), Color(0xFFF9A8D4)],
+    // 1. Solid blue
+    [Color(0xFF162C65), Color(0xFF162C65)],
+    // 2. Pink gradient
+    [Color(0xFFFF81A4), Color(0xFFCE4E72)],
+    // 3. Beige-mint gradient (left-mid to right-mid)
+    [Color(0xFFD8AAAE), Color(0xFFA2D1C9)],
+    // 4. Blue-lavender gradient (left-mid to right-mid)
+    [Color(0xFF8397EF), Color(0xFFCF9FE1)],
+    // 5. Emerald-teal gradient (top to bottom)
+    [Color(0xFF26D8BF), Color(0xFF228F80)],
+    // 6. Aqua-royal gradient (top to bottom)
+    [Color(0xFF8AE4FF), Color(0xFF0C6AB2)],
+    // 7. Warm grey-violet gradient (top to bottom)
+    [Color(0xFFC4BCCC), Color(0xFF806597)],
+    // 8. Pink-magenta gradient (top to bottom)
+    [Color(0xFFFFA8E2), Color(0xFFEF46B7)],
   ];
 
   @override
@@ -831,7 +855,7 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                         ? const Icon(
                             Icons.check,
                             color: Color(0xFF162C65),
-                            size: 32,
+                            size: 36,
                           )
                         : SizedBox(
                             width: double.infinity,

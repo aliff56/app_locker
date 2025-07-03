@@ -77,7 +77,10 @@ flutter:
   assets:
     - assets/icon/app_icon.png
     - assets/icon/vector.png
-
+    - assets/icon/camouflage.png
+    - assets/icon/intruder.png
+    - assets/icon/settings.png
+    - assets/icon/themes.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

@@ -39,14 +39,14 @@ class LockScreenActivity : AppCompatActivity() {
         // Set gradient background based on selected theme
         val themeIdx = prefs.getInt("selected_theme", 0)
         val gradients = arrayOf(
-            intArrayOf(0xFFB16CEA.toInt(), 0xFFFF5E69.toInt()),
-            intArrayOf(0xFFFF5E69.toInt(), 0xFFFFA07A.toInt()),
-            intArrayOf(0xFF92FE9D.toInt(), 0xFF00C9FF.toInt()),
-            intArrayOf(0xFFB1B5EA.toInt(), 0xFFB993D6.toInt()),
-            intArrayOf(0xFF43E97B.toInt(), 0xFF38F9D7.toInt()),
-            intArrayOf(0xFF667EEA.toInt(), 0xFF64B6FF.toInt()),
-            intArrayOf(0xFF868686.toInt(), 0xFFA3A3A3.toInt()),
-            intArrayOf(0xFFF797A6.toInt(), 0xFFF9A8D4.toInt())
+            intArrayOf(0xFF162C65.toInt(), 0xFF162C65.toInt()), // Solid blue
+            intArrayOf(0xFFFF81A4.toInt(), 0xFFCE4E72.toInt()), // Pink gradient
+            intArrayOf(0xFFD8AAAE.toInt(), 0xFFA2D1C9.toInt()), // Beige-mint
+            intArrayOf(0xFF8397EF.toInt(), 0xFFCF9FE1.toInt()), // Blue-lavender
+            intArrayOf(0xFF26D8BF.toInt(), 0xFF228F80.toInt()), // Emerald-teal
+            intArrayOf(0xFF8AE4FF.toInt(), 0xFF0C6AB2.toInt()), // Aqua-royal
+            intArrayOf(0xFFC4BCCC.toInt(), 0xFF806597.toInt()), // Grey-violet
+            intArrayOf(0xFFFFA8E2.toInt(), 0xFFEF46B7.toInt())  // Pink-magenta
         )
         val root = findViewById<android.view.View>(android.R.id.content)
         val gradient = android.graphics.drawable.GradientDrawable(

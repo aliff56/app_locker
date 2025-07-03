@@ -1,44 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:pattern_lock/pattern_lock.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/secure_storage.dart';
-import '../../theme.dart';
 
-class PatternUnlockScreen extends StatefulWidget {
+class AppLockPatternUnlock extends StatefulWidget {
   final VoidCallback onSuccess;
-  const PatternUnlockScreen({super.key, required this.onSuccess});
+  final VoidCallback? onSwitchToPin;
+  const AppLockPatternUnlock({
+    Key? key,
+    required this.onSuccess,
+    this.onSwitchToPin,
+  }) : super(key: key);
 
   @override
-  State<PatternUnlockScreen> createState() => _PatternUnlockScreenState();
+  State<AppLockPatternUnlock> createState() => _AppLockPatternUnlockState();
 }
 
-class _PatternUnlockScreenState extends State<PatternUnlockScreen> {
-  int _themeIdx = 0;
-  final List<List<Color>> _gradients = [
-    [Color(0xFFB16CEA), Color(0xFFFF5E69)],
-    [Color(0xFFFF5E69), Color(0xFFFFA07A)],
-    [Color(0xFF92FE9D), Color(0xFF00C9FF)],
-    [Color(0xFFB1B5EA), Color(0xFFB993D6)],
-    [Color(0xFF43E97B), Color(0xFF38F9D7)],
-    [Color(0xFF667EEA), Color(0xFF64B6FF)],
-    [Color(0xFF868686), Color(0xFFA3A3A3)],
-    [Color(0xFFF797A6), Color(0xFFF9A8D4)],
-  ];
-
+class _AppLockPatternUnlockState extends State<AppLockPatternUnlock> {
   String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadTheme();
-  }
-
-  Future<void> _loadTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _themeIdx = prefs.getInt('selected_theme') ?? 0;
-    });
-  }
 
   Future<bool> _verify(List<int> input) async {
     final stored = await SecureStorage().getPattern();
@@ -54,7 +32,6 @@ class _PatternUnlockScreenState extends State<PatternUnlockScreen> {
         child: Column(
           children: [
             const SizedBox(height: 32),
-            // App icon
             Container(
               width: 96,
               height: 96,
@@ -81,9 +58,9 @@ class _PatternUnlockScreenState extends State<PatternUnlockScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            Text(
-              'Draw your pattern',
-              style: const TextStyle(
+            const Text(
+              'Enter pattern',
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,

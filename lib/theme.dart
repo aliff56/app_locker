@@ -21,6 +21,7 @@ ThemeData appTheme() {
     primaryColor: kPrimaryColor,
     fontFamily: GoogleFonts.beVietnamPro().fontFamily,
     useMaterial3: true,
+    progressIndicatorTheme: const ProgressIndicatorThemeData(color: kBgColor),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(
@@ -44,6 +45,12 @@ ThemeData appTheme() {
       backgroundColor: kBgColor,
       foregroundColor: Colors.white,
       elevation: 0,
+      iconTheme: IconThemeData(color: Colors.white),
+      titleTextStyle: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w700,
+        fontSize: 22,
+      ),
     ),
   );
 }
@@ -62,6 +69,7 @@ ThemeData appDarkTheme() {
     primaryColor: kPrimaryColor,
     fontFamily: GoogleFonts.beVietnamPro().fontFamily,
     useMaterial3: true,
+    progressIndicatorTheme: const ProgressIndicatorThemeData(color: kBgColor),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(
@@ -85,6 +93,12 @@ ThemeData appDarkTheme() {
       backgroundColor: kBgColor,
       foregroundColor: Colors.white,
       elevation: 0,
+      iconTheme: IconThemeData(color: Colors.white),
+      titleTextStyle: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w700,
+        fontSize: 20,
+      ),
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: kDarkBgColor,

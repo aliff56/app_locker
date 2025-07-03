@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../native_bridge.dart';
 
 class IntruderPhotosScreen extends StatefulWidget {
@@ -63,7 +62,13 @@ class _IntruderPhotosScreenState extends State<IntruderPhotosScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Intruder Selfies'),
+        backgroundColor: const Color(0xFF162C65),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          'Intruder Selfies',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -80,14 +85,16 @@ class _IntruderPhotosScreenState extends State<IntruderPhotosScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _paths.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    FontAwesomeIcons.userSecret,
-                    size: 60,
+                  Image.asset(
+                    'assets/icon/intruder.png',
+                    width: 60,
+                    height: 60,
                     color: Colors.grey,
+                    colorBlendMode: BlendMode.srcIn,
                   ),
                   SizedBox(height: 16),
                   Text(
@@ -123,15 +130,34 @@ class _IntruderPhotosScreenState extends State<IntruderPhotosScreen> {
                     final confirm = await showDialog<bool>(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        title: const Text('Delete photo?'),
-                        content: const Text('This cannot be undone.'),
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        title: const Text(
+                          'Delete photo?',
+                          style: TextStyle(
+                            color: Color(0xFF162C65),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        content: const Text(
+                          'This cannot be undone.',
+                          style: TextStyle(color: Colors.black87, fontSize: 15),
+                        ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, false),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.grey,
+                            ),
                             child: const Text('Cancel'),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, true),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Color(0xFF162C65),
+                            ),
                             child: const Text('Delete'),
                           ),
                         ],
