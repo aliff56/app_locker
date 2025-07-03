@@ -96,15 +96,23 @@ class ForegroundLockService : Service() {
         val launcherPkgs = getLauncherPackages()
         val now = System.currentTimeMillis()
 
+        // If we have previously unlocked a locked app and now truly left it
+        // (current foreground pkg is different), clear the marker so next time
+        // we enter that app we will lock again. We only clear when the last
+        // foreground was the unlocked package to avoid clearing during rapid
+        // System UI transitions.
+        if (unlockedPackage != null && currentApp != unlockedPackage && lastForegroundApp == unlockedPackage) {
+            unlockedPackage = null
+        }
+
         // Ignore if launcher or system UI
         if (launcherPkgs.contains(currentApp) || currentApp == "com.android.systemui") {
             lastForegroundApp = currentApp
             return
         }
 
-        // If app is not locked, reset unlockedPackage and exit
+        // If current app is not locked, nothing to do.
         if (!lockedApps.contains(currentApp)) {
-            unlockedPackage = null
             lastForegroundApp = currentApp
             return
         }
