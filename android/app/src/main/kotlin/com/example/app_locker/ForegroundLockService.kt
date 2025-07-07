@@ -14,8 +14,6 @@ import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.app.usage.UsageEvents
 import android.os.PowerManager
-import android.app.AlarmManager
-import android.app.PendingIntent
 import java.util.concurrent.TimeUnit
 
 class ForegroundLockService : Service() {
@@ -54,7 +52,6 @@ class ForegroundLockService : Service() {
         loadLockedApps()
         scheduleChecker()
         registerReceiver(unlockReceiver, IntentFilter(ACTION_UNLOCKED))
-        scheduleWakeupAlarm()
         // Register for USER_PRESENT and SCREEN_ON
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_USER_PRESENT)
@@ -197,19 +194,6 @@ class ForegroundLockService : Service() {
         val pm = packageManager
         val resolveInfos = pm.queryIntentActivities(intent, 0)
         return resolveInfos.map { it.activityInfo.packageName }.toSet()
-    }
-
-    private fun scheduleWakeupAlarm() {
-        val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val pi = PendingIntent.getService(
-            this, 0, Intent(this, ForegroundLockService::class.java),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        am.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(10),
-            pi
-        )
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
