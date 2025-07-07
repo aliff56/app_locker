@@ -112,4 +112,8 @@ class PatternLockActivity : AppCompatActivity() {
         }
         sendBroadcast(b)
     }
+
+    override fun onBackPressed() {
+        // Block back button to prevent bypass
+    }
 } 

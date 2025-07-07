@@ -194,6 +194,10 @@ class LockScreenActivity : AppCompatActivity() {
         sendBroadcast(b)
     }
 
+    override fun onBackPressed() {
+        // Block back button to prevent bypass
+    }
+
     companion object {
         const val EXTRA_PACKAGE = "locked_package"
         const val PREF_PIN = "user_pin"

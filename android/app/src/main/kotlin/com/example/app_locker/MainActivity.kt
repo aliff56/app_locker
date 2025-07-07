@@ -132,6 +132,12 @@ class MainActivity : FlutterActivity() {
                     AdminUtil.disableAdministration(this)
                     result.success(null)
                 }
+                "isAccessibilityServiceEnabled" -> {
+                    val enabledServices = android.provider.Settings.Secure.getString(contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+                    val expected = "$packageName/com.example.app_locker.AppLockAccessibilityService"
+                    val isEnabled = enabledServices?.split(":")?.contains(expected) == true
+                    result.success(isEnabled)
+                }
                 else -> result.notImplemented()
             }
         }

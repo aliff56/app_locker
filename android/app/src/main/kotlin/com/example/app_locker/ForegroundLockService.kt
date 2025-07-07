@@ -13,6 +13,10 @@ import java.util.*
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.app.usage.UsageEvents
+import android.os.PowerManager
+import android.app.AlarmManager
+import android.app.PendingIntent
+import java.util.concurrent.TimeUnit
 
 class ForegroundLockService : Service() {
 
@@ -37,6 +41,12 @@ class ForegroundLockService : Service() {
     private val lastLockTime: MutableMap<String, Long> = mutableMapOf()
     private val lockCooldownMs = 2000L // 2 seconds
     private var lastForegroundApp: String? = null
+    private val restartReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val restartIntent = Intent(context, ForegroundLockService::class.java)
+            context?.startForegroundService(restartIntent)
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -44,6 +54,13 @@ class ForegroundLockService : Service() {
         loadLockedApps()
         scheduleChecker()
         registerReceiver(unlockReceiver, IntentFilter(ACTION_UNLOCKED))
+        scheduleWakeupAlarm()
+        // Register for USER_PRESENT and SCREEN_ON
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_USER_PRESENT)
+            addAction(Intent.ACTION_SCREEN_ON)
+        }
+        registerReceiver(restartReceiver, filter)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -58,6 +75,7 @@ class ForegroundLockService : Service() {
         super.onDestroy()
         timer.cancel()
         unregisterReceiver(unlockReceiver)
+        unregisterReceiver(restartReceiver)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -166,7 +184,11 @@ class ForegroundLockService : Service() {
             .setSmallIcon(android.R.drawable.ic_lock_lock)
             .build()
 
-        startForeground(1, notification)
+        if (Build.VERSION.SDK_INT >= 26) {
+            startForeground(1, notification)
+        } else {
+            startForeground(1, notification)
+        }
     }
 
     private fun getLauncherPackages(): Set<String> {
@@ -175,6 +197,36 @@ class ForegroundLockService : Service() {
         val pm = packageManager
         val resolveInfos = pm.queryIntentActivities(intent, 0)
         return resolveInfos.map { it.activityInfo.packageName }.toSet()
+    }
+
+    private fun scheduleWakeupAlarm() {
+        val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val pi = PendingIntent.getService(
+            this, 0, Intent(this, ForegroundLockService::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        am.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(10),
+            pi
+        )
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        // Restart service if killed
+        val restartIntent = Intent(applicationContext, ForegroundLockService::class.java)
+        restartIntent.setPackage(packageName)
+        val pi = PendingIntent.getService(
+            applicationContext, 1, restartIntent,
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        am.setExactAndAllowWhileIdle(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime() + 1000,
+            pi
+        )
+        super.onTaskRemoved(rootIntent)
     }
 
     companion object {

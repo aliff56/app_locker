@@ -84,7 +84,7 @@ class _AppLockerHomeState extends State<AppLockerHome>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _checkPermissions();
+      // _checkPermissions(); // Removed automatic navigation on permission grant
       // Require re-authentication on resume
       if (mounted) {
         setState(() {

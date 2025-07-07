@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_service_desc">App Locker Accessibility Service: Used to detect and lock protected apps for your privacy and security.</string>
+</resources> 

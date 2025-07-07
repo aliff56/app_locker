@@ -126,46 +126,49 @@ class _PinScreenState extends State<PinScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: _gradients[_themeIdx],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        backgroundColor: Colors.transparent,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: _gradients[_themeIdx],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 24),
-              Text(
-                widget.isSetup
-                    ? _isConfirming
-                          ? 'Confirm your PIN'
-                          : 'Set your 4-digit PIN'
-                    : 'Enter PIN',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+          child: SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 24),
+                Text(
+                  widget.isSetup
+                      ? _isConfirming
+                            ? 'Confirm your PIN'
+                            : 'Set your 4-digit PIN'
+                      : 'Enter PIN',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                _buildDots(),
+                if (_errorText.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(_errorText, style: const TextStyle(color: Colors.red)),
+                ],
+                const Spacer(),
+                NumericKeypad(
+                  onDigit: _onDigit,
+                  onBack: _onBack,
                   color: Colors.white,
                 ),
-              ),
-              const SizedBox(height: 32),
-              _buildDots(),
-              if (_errorText.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text(_errorText, style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 24),
               ],
-              const Spacer(),
-              NumericKeypad(
-                onDigit: _onDigit,
-                onBack: _onBack,
-                color: Colors.white,
-              ),
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
         ),
       ),

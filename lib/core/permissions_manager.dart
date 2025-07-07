@@ -2,6 +2,7 @@ import 'package:app_usage/app_usage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:installed_apps/installed_apps.dart';
+import 'package:flutter/services.dart';
 
 class PermissionsManager {
   static final PermissionsManager _instance = PermissionsManager._internal();
@@ -167,5 +168,17 @@ class PermissionsManager {
 
   static Future<void> requestScheduleExactAlarmPermission() async {
     await Permission.scheduleExactAlarm.request();
+  }
+
+  static Future<bool> isAccessibilityServiceEnabled() async {
+    try {
+      const channel = MethodChannel('com.example.app_locker/native_bridge');
+      final result = await channel.invokeMethod<bool>(
+        'isAccessibilityServiceEnabled',
+      );
+      return result ?? false;
+    } catch (_) {
+      return false;
+    }
   }
 }
