@@ -79,7 +79,7 @@ class _PermissionsSetupScreenState extends State<PermissionsSetupScreen> {
               ),
             ),
             if (!granted)
-              ElevatedButton(onPressed: onGrant, child: const Text('Grant')),
+              ElevatedButton(onPressed: onGrant, child: const Text('Allow')),
             if (granted)
               const Icon(Icons.check_circle, color: Color(0xFF1AD36D)),
           ],
