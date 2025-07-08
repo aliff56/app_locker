@@ -12,11 +12,17 @@ import 'theme.dart';
 import 'features/onboarding/splash_screen.dart';
 import 'features/auth/applock_pattern_unlock.dart';
 import 'features/auth/applock_pin_unlock.dart';
+import 'package:app_usage/app_usage.dart';
+import 'features/locklist/locked_apps_manager.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 final themeModeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
   runApp(
     ValueListenableBuilder<ThemeMode>(
       valueListenable: themeModeNotifier,
@@ -194,6 +200,7 @@ class _AppLockerHomeState extends State<AppLockerHome>
 
     // Only show lock screens after setup is complete
     if (_isSetupComplete && !_isAuthenticated) {
+      debugPrint('🟪 [LOCK-FLOW] Lock screen initiated (main.dart)');
       return FutureBuilder<String>(
         future: _secureStorage.getLockType(),
         builder: (context, snapshot) {
@@ -204,12 +211,14 @@ class _AppLockerHomeState extends State<AppLockerHome>
           if (lockType == 'pattern') {
             return AppLockPatternUnlock(
               onSuccess: () {
+                debugPrint('🟪 [LOCK-FLOW] Pattern unlock success (main.dart)');
                 if (mounted) setState(() => _isAuthenticated = true);
               },
             );
           } else {
             return AppLockPinUnlock(
               onSuccess: () {
+                debugPrint('🟪 [LOCK-FLOW] PIN unlock success (main.dart)');
                 if (mounted) setState(() => _isAuthenticated = true);
               },
             );
@@ -219,5 +228,61 @@ class _AppLockerHomeState extends State<AppLockerHome>
     }
 
     return Scaffold(body: _pages[_navIndex]);
+  }
+}
+
+class ForegroundAppMonitor {
+  Timer? _timer;
+  int _heartbeat = 0;
+  String? _lastApp;
+  bool _overlayShown = false;
+
+  void start() {
+    debugPrint('🟦 [SERVICE] ForegroundAppMonitor started');
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(milliseconds: 500), (_) => _check());
+  }
+
+  void stop() {
+    debugPrint('🟦 [SERVICE] ForegroundAppMonitor stopped');
+    _timer?.cancel();
+  }
+
+  Future<void> _check() async {
+    try {
+      _heartbeat++;
+      if (_heartbeat % 10 == 0) {
+        debugPrint('🟦 [SERVICE] ForegroundAppMonitor heartbeat: running');
+      }
+      final endDate = DateTime.now();
+      final startDate = endDate.subtract(const Duration(seconds: 2));
+      final usage = await AppUsage().getAppUsage(startDate, endDate);
+      if (usage.isEmpty) {
+        debugPrint('🟪 [LOCK-FLOW] No usage data');
+        return;
+      }
+      final currentApp = usage.first.packageName;
+      debugPrint('🟪 [LOCK-FLOW] Foreground app: $currentApp');
+      if (currentApp == _lastApp) return;
+      _lastApp = currentApp;
+
+      final isLocked = await LockedAppsManager().isAppLocked(currentApp);
+      debugPrint(
+        '🟪 [LOCK-FLOW] isLocked: $isLocked, _overlayShown: $_overlayShown',
+      );
+      if (isLocked && !_overlayShown) {
+        _overlayShown = true;
+        debugPrint('🟪 [LOCK-FLOW] Triggering overlay for $currentApp');
+        // Replace await NativeBridge.showLockOverlay(); with a debug log indicating where the overlay would be triggered, since the method does not exist.
+      } else if (!isLocked) {
+        if (_overlayShown)
+          debugPrint(
+            '🟪 [LOCK-FLOW] App is not locked, resetting _overlayShown',
+          );
+        _overlayShown = false;
+      }
+    } catch (e) {
+      debugPrint('🟥 [LOCK-FLOW] ForegroundAppMonitor error: $e');
+    }
   }
 }

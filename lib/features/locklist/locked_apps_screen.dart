@@ -10,6 +10,10 @@ import 'package:flutter/services.dart';
 import '../../theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:installed_apps/app_info.dart' as InstalledAppInfo;
+import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class LockedAppsScreen extends StatefulWidget {
   const LockedAppsScreen({super.key});
@@ -26,6 +30,11 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
   String _filter = 'all';
   bool _showSearch = false;
   String _searchQuery = '';
+  static List<AppInfo>? _cachedApps;
+  static DateTime? _lastCacheTime;
+  static const Duration _cacheDuration = Duration(minutes: 5);
+  static const String _appsCacheKey = 'installed_apps_cache';
+  static const String _appsCacheTimeKey = 'installed_apps_cache_time';
   final List<Map<String, dynamic>> _features = [
     {
       'label': 'Camouflage',
@@ -73,14 +82,58 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
     {'label': 'Locked', 'value': 'locked'},
     {'label': 'Social', 'value': 'social'},
     {'label': 'System', 'value': 'system'},
-    {'label': 'HOT', 'value': 'hot'},
+    {'label': 'Hot', 'value': 'hot'},
   ];
+  Map<String, Uint8List?> _iconCache = {};
+
+  Future<void> _loadInstalledAppsFromCache() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonStr = prefs.getString(_appsCacheKey);
+    final cacheTime = prefs.getInt(_appsCacheTimeKey);
+    if (jsonStr != null && cacheTime != null) {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      if (now - cacheTime < _cacheDuration.inMilliseconds) {
+        try {
+          final List<dynamic> decoded = jsonDecode(jsonStr);
+          final cached = decoded
+              .map(
+                (e) => AppInfo(
+                  packageName: e['packageName'],
+                  name: e['name'],
+                  icon: null, // icons are not cached
+                  versionName: e['versionName'] ?? '',
+                  versionCode: e['versionCode'] ?? 0,
+                  builtWith: BuiltWith.native_or_others,
+                  installedTimestamp: e['installedTimestamp'] ?? 0,
+                ),
+              )
+              .toList();
+          setState(() {
+            _installedApps = cached;
+            _isLoading = false;
+          });
+        } catch (e) {
+          debugPrint('Error decoding cached app list: $e');
+        }
+      }
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _loadLockedApps();
-    _loadInstalledApps();
+    _loadInstalledAppsFromCache();
+    _loadInstalledApps(); // Always refresh in background
+  }
+
+  @override
+  void didUpdateWidget(covariant LockedAppsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If the app list changes, reload icons
+    if (_installedApps != null && _iconCache.isEmpty) {
+      _loadAllAppIcons(_installedApps!);
+    }
   }
 
   Future<void> _loadLockedApps() async {
@@ -99,19 +152,111 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
     }
   }
 
-  Future<void> _loadInstalledApps() async {
+  Future<void> _saveInstalledAppsToCache(List<AppInfo> apps) async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonStr = jsonEncode(
+      apps
+          .map(
+            (a) => {
+              'packageName': a.packageName,
+              'name': a.name,
+              'versionName': a.versionName,
+              'versionCode': a.versionCode,
+              'installedTimestamp': a.installedTimestamp,
+            },
+          )
+          .toList(),
+    );
+    await prefs.setString(_appsCacheKey, jsonStr);
+    await prefs.setInt(
+      _appsCacheTimeKey,
+      DateTime.now().millisecondsSinceEpoch,
+    );
+  }
+
+  Future<List<AppInfo>> _getLaunchableAppsFromPlatform() async {
+    const platform = MethodChannel('com.example.app_locker/native_bridge');
+    final List<dynamic> result = await platform.invokeMethod(
+      'getLaunchableApps',
+    );
+    return result
+        .map(
+          (e) => AppInfo(
+            packageName: e['packageName'] as String,
+            name: e['name'] as String,
+            icon: null,
+            versionName: '',
+            versionCode: 0,
+            builtWith: BuiltWith.native_or_others,
+            installedTimestamp: 0,
+          ),
+        )
+        .toList();
+  }
+
+  Future<void> _loadAllAppIcons(List<AppInfo> apps) async {
+    const platform = MethodChannel('com.example.app_locker/native_bridge');
+    final Map result = await platform.invokeMethod('getAllAppIcons');
+    setState(() {
+      _iconCache.clear();
+      _iconCache.addAll(
+        result.map(
+          (key, value) =>
+              MapEntry(key as String, base64Decode(value as String)),
+        ),
+      );
+    });
+  }
+
+  Future<void> _loadInstalledApps({bool forceRefresh = false}) async {
     setState(() => _isLoading = true);
     try {
-      final apps = await InstalledApps.getInstalledApps(false, true);
+      // Use persistent cache if not forceRefresh and cache is valid
+      if (!forceRefresh) {
+        final prefs = await SharedPreferences.getInstance();
+        final jsonStr = prefs.getString(_appsCacheKey);
+        final cacheTime = prefs.getInt(_appsCacheTimeKey);
+        if (jsonStr != null && cacheTime != null) {
+          final now = DateTime.now().millisecondsSinceEpoch;
+          if (now - cacheTime < _cacheDuration.inMilliseconds) {
+            final List<dynamic> decoded = jsonDecode(jsonStr);
+            final cached = decoded
+                .map(
+                  (e) => AppInfo(
+                    packageName: e['packageName'],
+                    name: e['name'],
+                    icon: null, // icons are not cached
+                    versionName: e['versionName'] ?? '',
+                    versionCode: e['versionCode'] ?? 0,
+                    builtWith: BuiltWith.native_or_others,
+                    installedTimestamp: e['installedTimestamp'] ?? 0,
+                  ),
+                )
+                .toList();
+            setState(() {
+              _installedApps = cached;
+              _isLoading = false;
+            });
+            return;
+          }
+        }
+      }
+      // Use platform channel to get only launchable apps
+      final apps = await _getLaunchableAppsFromPlatform();
       // Filter out AppLock itself
       final filteredApps = apps
           .where((a) => a.packageName != 'com.example.app_locker')
           .toList();
+      _cachedApps = filteredApps;
+      _lastCacheTime = DateTime.now();
+      await _saveInstalledAppsToCache(filteredApps);
       if (mounted) {
         setState(() {
           _installedApps = filteredApps;
           _isLoading = false;
         });
+        // Load all icons after setting the app list
+        _loadAllAppIcons(filteredApps);
       }
     } catch (e) {
       debugPrint('Error loading installed apps: $e');
@@ -229,6 +374,37 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
     }
   }
 
+  // Use installed_apps for icon fetching
+  Future<Uint8List?> getAppIcon(String packageName) async {
+    if (_iconCache.containsKey(packageName)) {
+      return _iconCache[packageName];
+    }
+    try {
+      // Disk cache path
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/icon_$packageName.png');
+      if (await file.exists()) {
+        final bytes = await file.readAsBytes();
+        _iconCache[packageName] = bytes;
+        return bytes;
+      }
+      // Fetch from installed_apps
+      final InstalledAppInfo.AppInfo? info = await InstalledApps.getAppInfo(
+        packageName,
+        BuiltWith.native_or_others,
+      );
+      if (info != null && info.icon != null) {
+        await file.writeAsBytes(info.icon!);
+        _iconCache[packageName] = info.icon;
+        return info.icon;
+      }
+    } catch (e) {
+      // ignore
+    }
+    _iconCache[packageName] = null;
+    return null;
+  }
+
   Widget _buildAppCard(AppInfo app, bool locked) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -236,9 +412,17 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       elevation: 6,
       child: ListTile(
-        leading: app.icon != null
-            ? Image.memory(app.icon!, width: 56, height: 56)
-            : const Icon(Icons.android, size: 56),
+        leading: FutureBuilder<Uint8List?>(
+          future: getAppIcon(app.packageName),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done &&
+                snapshot.hasData &&
+                snapshot.data != null) {
+              return Image.memory(snapshot.data!, width: 56, height: 56);
+            }
+            return const Icon(Icons.android, size: 56);
+          },
+        ),
         title: Text(
           app.name ?? app.packageName,
           style: GoogleFonts.beVietnamPro(
@@ -597,6 +781,15 @@ class _LockedAppsScreenState extends State<LockedAppsScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _loadInstalledApps(forceRefresh: true);
+      },
+      child: _buildFilteredListContent(),
+    );
+  }
+
+  Widget _buildFilteredListContent() {
     // Special case for "Locked" filter
     if (_filter == 'locked') {
       List<String> filtered = _lockedApps;

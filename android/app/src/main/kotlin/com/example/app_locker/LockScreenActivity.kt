@@ -66,9 +66,9 @@ class LockScreenActivity : AppCompatActivity() {
             pinDotsLayout.removeAllViews()
             for (i in 0 until pinLength) {
                 val dot = TextView(this)
-                val size = (resources.displayMetrics.density * 18).toInt()
+                val size = (resources.displayMetrics.density * 24).toInt()
                 val params = LinearLayout.LayoutParams(size, size)
-                params.setMargins(12, 0, 12, 0)
+                params.setMargins(14, 0, 14, 0)
                 dot.layoutParams = params
                 dot.background = resources.getDrawable(android.R.drawable.presence_online, null)
                 dot.background.setTint(if (i < enteredPin.length) 0xFFFFFFFF.toInt() else 0x33FFFFFF)
@@ -103,12 +103,16 @@ class LockScreenActivity : AppCompatActivity() {
             "1", "2", "3",
             "4", "5", "6",
             "7", "8", "9",
-            "",  "0", "<"
+            "",  "0", "<" // bottom row: empty, 0, backspace
         )
         keypadGrid.removeAllViews()
         for ((i, key) in keys.withIndex()) {
+            if (key.isEmpty()) {
+                // Skip adding a view for the empty cell
+                continue
+            }
             val btn = TextView(this)
-            val size = (resources.displayMetrics.density * 64).toInt()
+            val size = (resources.displayMetrics.density * 80).toInt()
             val params = GridLayout.LayoutParams().apply {
                 width = size
                 height = size
@@ -117,7 +121,7 @@ class LockScreenActivity : AppCompatActivity() {
                 columnSpec = GridLayout.spec(i % 3)
             }
             btn.layoutParams = params
-            btn.textSize = 28f
+            btn.textSize = 32f
             btn.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
             btn.gravity = Gravity.CENTER
             btn.setTypeface(null, Typeface.BOLD)
@@ -127,7 +131,7 @@ class LockScreenActivity : AppCompatActivity() {
             bg.shape = android.graphics.drawable.GradientDrawable.OVAL
             bg.setColor(0xFFFFFFFF.toInt())
             btn.background = bg
-            btn.isClickable = key.isNotEmpty()
+            btn.isClickable = true
             btn.isFocusable = false
             btn.text = when (key) {
                 "<" -> "⌫"
@@ -139,7 +143,7 @@ class LockScreenActivity : AppCompatActivity() {
                         enteredPin = enteredPin.substring(0, enteredPin.length - 1)
                         updateDots()
                     }
-                } else if (key.isNotEmpty() && enteredPin.length < pinLength) {
+                } else if (enteredPin.length < pinLength) {
                     enteredPin += key
                     updateDots()
                     if (enteredPin.length == pinLength) handlePinComplete()

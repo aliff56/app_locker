@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "770571662466",
+    "project_id": "app-locker-708bf",
+    "storage_bucket": "app-locker-708bf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:770571662466:android:5a852dad5660ba7f6a709b",
+        "android_client_info": {
+          "package_name": "com.example.app_locker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArHR8qrJJooNa-Joj42ST_0VRDC_ZbIeY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

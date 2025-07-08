@@ -58,18 +58,10 @@ class NumericKeypad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final buttons = [
-      '1',
-      '2',
-      '3',
-      '4',
-      '5',
-      '6',
-      '7',
-      '8',
-      '9',
-      onConfirm == null ? '' : '✓',
-      '0',
-      '<',
+      '1', '2', '3',
+      '4', '5', '6',
+      '7', '8', '9',
+      '', '0', '<', // bottom row: empty, 0, backspace
     ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),

@@ -200,16 +200,47 @@ class ForegroundLockService : Service() {
         // Restart service if killed
         val restartIntent = Intent(applicationContext, ForegroundLockService::class.java)
         restartIntent.setPackage(packageName)
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                applicationContext.startForegroundService(restartIntent)
+                android.util.Log.d("ForegroundLockService", "startForegroundService called in onTaskRemoved")
+            } else {
+                applicationContext.startService(restartIntent)
+                android.util.Log.d("ForegroundLockService", "startService called in onTaskRemoved")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ForegroundLockService", "Failed to restart service in onTaskRemoved", e)
+        }
+        // Also schedule with AlarmManager as backup
         val pi = PendingIntent.getService(
             applicationContext, 1, restartIntent,
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
         val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            if (am.canScheduleExactAlarms()) {
+                am.setExactAndAllowWhileIdle(
+                    AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + 1000,
+                    pi
+                )
+                android.util.Log.d("ForegroundLockService", "AlarmManager scheduled exact alarm in onTaskRemoved")
+            } else {
+                android.util.Log.e("ForegroundLockService", "Cannot schedule exact alarms: permission not granted. Using setAndAllowWhileIdle as fallback.")
+                am.setAndAllowWhileIdle(
+                    AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + 1000,
+                    pi
+                )
+            }
+        } else {
         am.setExactAndAllowWhileIdle(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
             SystemClock.elapsedRealtime() + 1000,
             pi
         )
+            android.util.Log.d("ForegroundLockService", "AlarmManager scheduled exact alarm in onTaskRemoved (pre-Android 12)")
+        }
         super.onTaskRemoved(rootIntent)
     }
 

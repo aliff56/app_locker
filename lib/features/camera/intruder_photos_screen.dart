@@ -129,38 +129,101 @@ class _IntruderPhotosScreenState extends State<IntruderPhotosScreen> {
                   onLongPress: () async {
                     final confirm = await showDialog<bool>(
                       context: context,
-                      builder: (ctx) => AlertDialog(
+                      builder: (ctx) => Dialog(
                         backgroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        title: const Text(
-                          'Delete photo?',
-                          style: TextStyle(
-                            color: Color(0xFF162C65),
-                            fontWeight: FontWeight.w700,
+                        elevation: 0,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'Delete Photo!',
+                                style: TextStyle(
+                                  color: Color(0xFF162C65),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 18,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 6),
+                              const Text(
+                                'Are you sure to delete this?',
+                                style: TextStyle(
+                                  color: Color(0xFF162C65),
+                                  fontSize: 15,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 14),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, false),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Color(0xFF162C65),
+                                        side: const BorderSide(
+                                          color: Color(0xFF162C65),
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 10,
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Cancel',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Color(0xFF162C65),
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 10,
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Delete',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                        content: const Text(
-                          'This cannot be undone.',
-                          style: TextStyle(color: Colors.black87, fontSize: 15),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.grey,
-                            ),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Color(0xFF162C65),
-                            ),
-                            child: const Text('Delete'),
-                          ),
-                        ],
                       ),
                     );
                     if (confirm == true) {

@@ -40,7 +40,13 @@ class LockedAppsManager {
 
   Future<bool> isAppLocked(String packageName) async {
     final lockedApps = await getLockedApps();
-    return lockedApps.contains(packageName);
+    final isLocked = lockedApps.contains(packageName);
+    if (isLocked) {
+      debugPrint('🟪 [LOCK-FLOW] Locked app detected: $packageName');
+    } else {
+      debugPrint('🟪 [LOCK-FLOW] App is NOT locked: $packageName');
+    }
+    return isLocked;
   }
 
   Future<void> addLockedApp(String packageName) async {

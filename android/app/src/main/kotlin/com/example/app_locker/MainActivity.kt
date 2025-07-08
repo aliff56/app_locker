@@ -132,11 +132,65 @@ class MainActivity : FlutterActivity() {
                     AdminUtil.disableAdministration(this)
                     result.success(null)
                 }
-                "isAccessibilityServiceEnabled" -> {
-                    val enabledServices = android.provider.Settings.Secure.getString(contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
-                    val expected = "$packageName/com.example.app_locker.AppLockAccessibilityService"
-                    val isEnabled = enabledServices?.split(":")?.contains(expected) == true
-                    result.success(isEnabled)
+                "getLaunchableApps" -> {
+                    val pm = applicationContext.packageManager
+                    val intent = Intent(Intent.ACTION_MAIN, null)
+                    intent.addCategory(Intent.CATEGORY_LAUNCHER)
+                    val resolveInfos = pm.queryIntentActivities(intent, 0)
+                    val apps = resolveInfos.map {
+                        mapOf(
+                            "packageName" to it.activityInfo.packageName,
+                            "name" to it.loadLabel(pm).toString()
+                        )
+                    }
+                    result.success(apps)
+                }
+                "getAllAppIcons" -> {
+                    val pm = applicationContext.packageManager
+                    val intent = Intent(Intent.ACTION_MAIN, null)
+                    intent.addCategory(Intent.CATEGORY_LAUNCHER)
+                    val resolveInfos = pm.queryIntentActivities(intent, 0)
+                    val iconMap = mutableMapOf<String, String>()
+                    for (info in resolveInfos) {
+                        try {
+                            val pkg = info.activityInfo.packageName
+                            val drawable = pm.getApplicationIcon(pkg)
+                            val bitmap = (drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap
+                            if (bitmap != null) {
+                                val stream = java.io.ByteArrayOutputStream()
+                                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+                                val bytes = stream.toByteArray()
+                                val base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+                                iconMap[pkg] = base64
+                            }
+                        } catch (e: Exception) {
+                            // skip icon if error
+                        }
+                    }
+                    result.success(iconMap)
+                }
+                "getAppIcon" -> {
+                    val pkg = call.argument<String>("packageName")
+                    if (pkg != null) {
+                        try {
+                            val pm = applicationContext.packageManager
+                            val drawable = pm.getApplicationIcon(pkg)
+                            val bitmap = (drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap
+                            if (bitmap != null) {
+                                val stream = java.io.ByteArrayOutputStream()
+                                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+                                val bytes = stream.toByteArray()
+                                val base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+                                result.success(base64)
+                            } else {
+                                result.success(null)
+                            }
+                        } catch (e: Exception) {
+                            result.success(null)
+                        }
+                    } else {
+                        result.success(null)
+                    }
                 }
                 else -> result.notImplemented()
             }

@@ -14,6 +14,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../theme.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../auth/pattern_unlock_screen.dart';
+import '../auth/applock_pin_unlock.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -161,25 +163,49 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   Future<void> _changePinOrPattern() async {
     if (_currentLockType == 'pattern') {
-      await Navigator.of(context).push(
+      // Require current pattern first
+      final verified = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
-          builder: (_) => PatternSetupScreen(
-            onSetupComplete: () {
-              Navigator.of(context).pop();
+          builder: (_) => PatternUnlockScreen(
+            onSuccess: () {
+              Navigator.of(context).pop(true);
             },
           ),
         ),
       );
+      if (verified == true && context.mounted) {
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => PatternSetupScreen(
+              onSetupComplete: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ),
+        );
+      }
     } else {
-      await Navigator.of(context).push(
+      // Require current PIN first
+      final verified = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
-          builder: (_) => PinSetupScreen(
-            onSetupComplete: () {
-              Navigator.of(context).pop();
+          builder: (_) => AppLockPinUnlock(
+            onSuccess: () {
+              Navigator.of(context).pop(true);
             },
           ),
         ),
       );
+      if (verified == true && context.mounted) {
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => PinSetupScreen(
+              onSetupComplete: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -455,7 +481,9 @@ class _SettingsScreenState extends State<SettingsScreen>
         children: [
           _menuItem(
             icon: Icons.lock,
-            label: 'Change PIN',
+            label: _currentLockType == 'pattern'
+                ? 'Change Pattern'
+                : 'Change PIN',
             onTap: _changePinOrPattern,
           ),
           const SizedBox(height: 16),
