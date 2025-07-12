@@ -17,10 +17,6 @@ Built using:
 - Flutter (for UI, settings, theming)
 - Native Kotlin service (for monitoring background apps and locking mechanism)
 
-## 📸 Screenshots
-
-*(Add screenshots here if you have them – helps people see the app!)*
-
 ## ⚙️ Setup
 
 > ⚠️ This project is primarily for learning and demonstration purposes.  
