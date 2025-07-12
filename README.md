@@ -1,16 +1,31 @@
-# app_locker
+# 📱 App Locker
 
-A new Flutter project.
+A fully functional, customizable app locker built with **Flutter** for the frontend and **native Kotlin** for background app monitoring and locking.
 
-## Getting Started
+This is my first big personal project aimed to be **practical and usable in daily life**, combining modern UI with real security features.
 
-This project is a starting point for a Flutter application.
+## ✨ Features
 
-A few resources to get you started if this is your first Flutter project:
+✅ **Lock any installed app** on your device with a PIN or pattern.  
+🎨 **Customizable lock screen themes** – choose the look you like.  
+🤳 **Intruder selfie** – secretly take a picture if someone enters the wrong password too many times (number of tries is configurable).  
+🕵️‍♂️ **Camouflage mode** – disguise the app as something else, like a compass or browser.  
+🛡 **Self-protection** – prevent the app from being uninstalled when enabled.  
+🔒 The app **auto-locks itself upon closing**, so no one else can access it.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Built using:
+- Flutter (for UI, settings, theming)
+- Native Kotlin service (for monitoring background apps and locking mechanism)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 📸 Screenshots
+
+*(Add screenshots here if you have them – helps people see the app!)*
+
+## ⚙️ Setup
+
+> ⚠️ This project is primarily for learning and demonstration purposes.  
+> Running it on your device requires proper setup and permissions.
+
+1. Clone the repo:
+   ```bash
+   git clone https://github.com/aliff56/app_locker
